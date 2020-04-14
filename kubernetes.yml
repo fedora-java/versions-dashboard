@@ -36,15 +36,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: default
   name: versions-frontend
 spec:
   strategy:
-    type: Recreate
+    type: RollingUpdate
   selector:
     matchLabels:
       service: versions-frontend
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
