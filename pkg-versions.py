@@ -413,3 +413,4 @@ with open(output_path, "w") as table:
 		
 		table.write('</tr>\n')
 	table.write('</table>\n')
+	table.write('<p>Generated on ' + time.ctime() + ' by ' + os.environ["HOSTNAME"] + '</p>\n')
