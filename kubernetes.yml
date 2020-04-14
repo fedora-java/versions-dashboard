@@ -101,6 +101,7 @@ metadata:
   name: versions-backend
 spec:
   schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
