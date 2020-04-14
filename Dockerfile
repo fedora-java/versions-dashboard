@@ -5,8 +5,10 @@ RUN : \
  && dnf -y install \
       python3-koji \
       python3-markdown2 \
+ && adduser versions-dashboard \
  && :
 
 COPY . /opt/versions-dashboard
 
+USER versions-dashboard
 ENTRYPOINT ["/opt/versions-dashboard/pkg-versions.py"]
