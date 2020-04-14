@@ -5,6 +5,7 @@ RUN : \
  && dnf -y install \
       python3-koji \
       python3-markdown2 \
+ && dnf -y clean all \
  && adduser versions-dashboard \
  && :
 
