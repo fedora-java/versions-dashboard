@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# Copyright (c) 2019 Red Hat, Inc.
+# Copyright (c) 2019-2020 Red Hat, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -36,9 +36,11 @@ from concurrent.futures import ThreadPoolExecutor as thread_pool
 
 ################################################################################
 
+output_path = os.environ.get("OUT_HTML", "versions.html")
+
 # If the cache file is older than this time (in seconds), regenerate it
 upstream_cache_interval = 1 * 60 * 60
-upstream_cache_path = "/tmp/pkg-versions-upstream-cache.json"
+upstream_cache_path = os.environ.get("CACHE_FILE", "/tmp/pkg-versions-upstream-cache.json")
 
 fedora_releases = ["f28", "f29", "f30", "f31", "f32"]
 releases = fedora_releases + ["mbi", "upstream (stable)"]
@@ -372,7 +374,7 @@ for i in range(3):
 	except:
 		continue
 
-with open("versions.html", "w") as table:
+with open(output_path, "w") as table:
 	table.write('<link rel=stylesheet href=mystyle.css>')
 	table.write('<table>\n')
 	
