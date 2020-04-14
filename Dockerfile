@@ -9,4 +9,4 @@ RUN : \
 
 COPY . /opt/versions-dashboard
 
-CMD ["./opt/versions-dashboard/pkg-versions.py"]
+ENTRYPOINT ["/opt/versions-dashboard/pkg-versions.py"]
