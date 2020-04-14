@@ -1,0 +1,131 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: versions-data
+  labels:
+    name: versions-data
+spec:
+  capacity:
+    storage: 10Mi
+  storageClassName: standard
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - vers=4.2
+  nfs:
+    path: /srv/versions
+    server: 172.22.13.2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: versions-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Mi
+  selector:
+    matchLabels:
+      name: versions-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: versions-frontend
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      service: versions-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: versions-frontend
+    spec:
+      containers:
+        - name: versions-frontend
+          image: docker.io/philippgille/serve
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /srv
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: versions-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: versions
+  labels:
+    service: versions
+spec:
+  ports:
+  - port: 8080
+  selector:
+    service: versions-frontend
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: versions
+spec:
+  rules:
+  - host: versions.kos.kjnet.xyz
+    http:
+      paths:
+      - backend:
+          serviceName: versions
+          servicePort: 8080
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: versions-backend
+spec:
+  schedule: "*/15 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: versions-backend
+              image: quay.io/mizdebsk/versions-dashboard:latest
+              env:
+                - name: OUT_HTML
+                  value: /srv/index.html
+                - name: CACHE_FILE
+                  value: /srv/cache.json
+              volumeMounts:
+                - name: data
+                  mountPath: /srv
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 1000m
+                  memory: 512Mi
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: versions-data
