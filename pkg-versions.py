@@ -42,7 +42,7 @@ output_path = os.environ.get("OUT_HTML", "versions.html")
 upstream_cache_interval = 1 * 60 * 60
 upstream_cache_path = os.environ.get("CACHE_FILE", "/tmp/pkg-versions-upstream-cache.json")
 
-fedora_releases = ["f28", "f29", "f30", "f31", "f32"]
+fedora_releases = ["f28", "f29", "f30", "f31", "f32", "f33"]
 releases = fedora_releases + ["mbi", "upstream (stable)"]
 
 mbi_index = len(fedora_releases)
