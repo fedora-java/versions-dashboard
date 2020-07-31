@@ -317,12 +317,15 @@ def row_to_str(versions: [str], tags: {str : str}) -> str:
 		html_class = "mbi-newer"
 	
 	result += '<td class="' + "mbi-bootstrap" + '">' + (versions[mbi_bootstrap_index] or "") + '</td>\n'
-	result += '<td colspan="2" class="' + html_class + '">' + versions[upstream_index][0] + '</td>\n'
+	result += '<td '
+	
+	if versions[upstream_index][1] is None:
+		result += 'colspan="2"'
+	
+	result += 'class="' + html_class + '">' + versions[upstream_index][0] + '</td>\n'
 	
 	if not versions[upstream_index][1] is None:
 		html_stable_class = "unknown-version"
-		
-		result = result.replace('colspan="2"', '')
 		
 		latest_stable_compare_value = version_compare(versions[mbi_index], versions[upstream_index][1])
 		
