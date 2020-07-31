@@ -53,6 +53,26 @@ thread_pool_size = 30
 
 ################################################################################
 
+# The mapping from package name to package name used in mbi-bootstrap repository
+bootstrap_package_name = {
+	"apache-commons-beanutils": "commons-beanutils",
+	"apache-commons-cli": "commons-cli",
+	"apache-commons-codec": "commons-codec",
+	"apache-commons-collections": "commons-collections",
+	"apache-commons-compress": "commons-compress",
+	"apache-commons-io": "commons-io",
+	"apache-commons-jxpath": "commons-jxpath",
+	"apache-commons-lang3": "commons-lang",
+	"apache-commons-logging": "commons-logging",
+	"apache-commons-parent": "commons-parent-pom",
+	
+	"aqute-bnd": "bnd",
+	
+	"felix-parent": "felix-parent-pom",
+	
+	"maven-plugin-build-helper": "build-helper-maven-plugin",
+}
+
 def normalize_version(version: str) -> str:
 	if not version:
 		return ""
@@ -233,7 +253,7 @@ def get_mbi_bootstrap_versions(package_names: {str}) -> {str: str}:
 		return content[begin : end]
 	
 	for package_name in package_names:
-		futures.append(pool.submit(get_mbi_bootstrap_version, package_name))
+		futures.append(pool.submit(get_mbi_bootstrap_version, bootstrap_package_name.get(package_name) or package_name))
 	
 	for package_name, project_version in zip(package_names, futures):
 		result[package_name] = project_version.result()
@@ -247,7 +267,12 @@ def get_all_versions() -> {str: []}:
 	
 	upstream = get_upstream_versions_cached(upstream_cache_path, package_names)
 	mbi = get_mbi_versions(package_names)
-	mbi_bootstrap = get_mbi_bootstrap_versions(set.intersection(package_names, get_mbi_bootstrap_packages()))
+	mbi_bootstrap = get_mbi_bootstrap_packages()
+	
+	mbi_bootstrap = get_mbi_bootstrap_versions({name for name in package_names
+		if name in mbi_bootstrap or bootstrap_package_name.get(name) in mbi_bootstrap
+	})
+	
 	releases = {}
 	
 	pool = thread_pool(len(fedora_releases))
@@ -260,7 +285,7 @@ def get_all_versions() -> {str: []}:
 		releases[release] = release_versions.result()
 	
 	for package_name in sorted(package_names):
-		result[package_name] = []
+		result[package_name] = list()
 		for release in fedora_releases:
 			result[package_name].append(releases[release][package_name])
 		result[package_name].append(mbi[package_name])
@@ -346,7 +371,7 @@ def get_comments(package_names: [str]) -> ({str : str}, {str : {str : str}}):
 		timeout = 7)
 	
 	if request.status_code != 200:
-		raise RuntimeError("Could not obtain the comments")
+		raise RuntimeError("Could not obtain comments")
 	
 	result = {package_name: "" for package_name in package_names}
 	tags = {package_name: "" for package_name in package_names}
