@@ -43,10 +43,11 @@ upstream_cache_interval = 1 * 60 * 60
 upstream_cache_path = os.environ.get("CACHE_FILE", "/tmp/pkg-versions-upstream-cache.json")
 
 fedora_releases = ["f28", "f29", "f30", "f31", "f32", "f33"]
-releases = fedora_releases + ["mbi", "upstream (stable)"]
+releases = fedora_releases + ["mbi", "mbi-bootstrap", "upstream (stable)"]
 
 mbi_index = len(fedora_releases)
-upstream_index = mbi_index + 1
+mbi_bootstrap_index = mbi_index + 1
+upstream_index = mbi_bootstrap_index + 1
 
 thread_pool_size = 30
 
@@ -90,9 +91,9 @@ def normalize_version(version: str) -> str:
 	
 	return leading + trailing
 
-def get_packages() -> [str]:
+def get_packages() -> {str}:
 	ks = koji.ClientSession("https://koji.kjnet.xyz/kojihub")
-	return sorted([package["package_name"] for package in filter(
+	return set([package["package_name"] for package in filter(
 		lambda package: not package["blocked"], ks.listPackages("jp")
 	)])
 
@@ -194,6 +195,51 @@ def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
 def get_mbi_versions(package_names: [str]) -> {str: str}:
 	return get_koji_versions(package_names, "https://koji.kjnet.xyz/kojihub", "jp")
 
+def get_mbi_bootstrap_packages() -> {str}:
+	result = set()
+	
+	index = 0
+	content = requests.get("https://pagure.io/mbi/stage2/blob/master/f/project").content.decode("utf-8")
+	pattern = "\"/mbi/stage2/blob/master/f/project/"
+
+	while True:
+		index = content.find(pattern, index)
+		
+		if index == -1:
+			break
+		
+		index += len(pattern)
+		
+		end = content.find(".xml\"", index)
+		result.add(content[index : end])
+	
+	return result
+
+def get_mbi_bootstrap_versions(package_names: {str}) -> {str: str}:
+	result = {}
+	
+	pool = thread_pool(thread_pool_size)
+	futures = list()
+	
+	def get_mbi_bootstrap_version(name: str) -> str:
+		content = requests.get("https://pagure.io/mbi/stage2/raw/master/f/project/" + name + ".xml").content.decode("utf-8")
+		
+		version_str = "<version>"
+		version_str_end = "</version>"
+		
+		begin = content.find(version_str) + len(version_str)
+		end = content.find(version_str_end, begin)
+		
+		return content[begin : end]
+	
+	for package_name in package_names:
+		futures.append(pool.submit(get_mbi_bootstrap_version, package_name))
+	
+	for package_name, project_version in zip(package_names, futures):
+		result[package_name] = project_version.result()
+	
+	return result
+
 def get_all_versions() -> {str: []}:
 	result = {}
 	
@@ -201,6 +247,7 @@ def get_all_versions() -> {str: []}:
 	
 	upstream = get_upstream_versions_cached(upstream_cache_path, package_names)
 	mbi = get_mbi_versions(package_names)
+	mbi_bootstrap = get_mbi_bootstrap_versions(set.intersection(package_names, get_mbi_bootstrap_packages()))
 	releases = {}
 	
 	pool = thread_pool(len(fedora_releases))
@@ -212,11 +259,15 @@ def get_all_versions() -> {str: []}:
 	for release, release_versions in zip(fedora_releases, futures):
 		releases[release] = release_versions.result()
 	
-	for package_name in package_names:
+	for package_name in sorted(package_names):
 		result[package_name] = []
 		for release in fedora_releases:
 			result[package_name].append(releases[release][package_name])
 		result[package_name].append(mbi[package_name])
+		
+		# Get None if package is not listed
+		result[package_name].append(mbi_bootstrap.get(package_name))
+		
 		result[package_name].append(upstream[package_name])
 	
 	return result
@@ -224,7 +275,7 @@ def get_all_versions() -> {str: []}:
 def version_compare(left: str, right: str) -> int:
 	return rpm.labelCompare(("", left, ""), ("", right, ""))
 
-def row_to_str(versions : [str], tags : {str : str}) -> str:
+def row_to_str(versions: [str], tags: {str : str}) -> str:
 	assert(len(versions) == len(releases))
 	
 	result = str()
@@ -265,6 +316,7 @@ def row_to_str(versions : [str], tags : {str : str}) -> str:
 	elif compare_value > 0:
 		html_class = "mbi-newer"
 	
+	result += '<td class="' + "mbi-bootstrap" + '">' + (versions[mbi_bootstrap_index] or "") + '</td>\n'
 	result += '<td colspan="2" class="' + html_class + '">' + versions[upstream_index][0] + '</td>\n'
 	
 	if not versions[upstream_index][1] is None:
