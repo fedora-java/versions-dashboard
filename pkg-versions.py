@@ -65,12 +65,28 @@ bootstrap_package_name = {
 	"apache-commons-lang3": "commons-lang",
 	"apache-commons-logging": "commons-logging",
 	"apache-commons-parent": "commons-parent-pom",
-	
+	"apache-parent": "apache-pom",
 	"aqute-bnd": "bnd",
-	
+	"beust-jcommander": "jcommander",
+	"cdi-api": "cdi",
 	"felix-parent": "felix-parent-pom",
-	
+	"google-guice": "guice",
+	"httpcomponents-project": "httpcomponents-parent-pom",
+	"java_cup": "cup",
+	"maven-parent": "maven-parent-pom",
 	"maven-plugin-build-helper": "build-helper-maven-plugin",
+	"maven-plugin-bundle": "maven-bundle-plugin",
+	"mojo-parent": "mojo-parent-pom",
+	"objectweb-asm": "asm",
+	"osgi-core": "osgi",
+	
+	# TODO ???
+	"plexus-build-api": "sisu-build-api",
+	"sisu": "sisu-inject",
+	##
+	
+	"sonatype-oss-parent": "oss-parent-pom",
+	"velocity": "velocity-engine",
 }
 
 def normalize_version(version: str) -> str:
