@@ -82,6 +82,7 @@ bootstrap_package_name = {
 	
 	# TODO ???
 	"plexus-build-api": "sisu-build-api",
+	"glassfish-servlet-api": "servlet-api",
 	"sisu": "sisu-inject",
 	##
 	
