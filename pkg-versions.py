@@ -67,25 +67,26 @@ bootstrap_package_name = {
 	"apache-commons-parent": "commons-parent-pom",
 	"apache-parent": "apache-pom",
 	"aqute-bnd": "bnd",
+	"atinject": "injection-api",
 	"beust-jcommander": "jcommander",
 	"cdi-api": "cdi",
 	"felix-parent": "felix-parent-pom",
+	"glassfish-annotation-api": "common-annotations-api",
+	"glassfish-servlet-api": "servlet-api",
 	"google-guice": "guice",
 	"httpcomponents-project": "httpcomponents-parent-pom",
 	"java_cup": "cup",
+	"junit": "junit4",
 	"maven-parent": "maven-parent-pom",
 	"maven-plugin-build-helper": "build-helper-maven-plugin",
 	"maven-plugin-bundle": "maven-bundle-plugin",
 	"mojo-parent": "mojo-parent-pom",
 	"objectweb-asm": "asm",
+	"osgi-annotation": "osgi",
+	"osgi-compendium": "osgi",
 	"osgi-core": "osgi",
-	
-	# TODO ???
 	"plexus-build-api": "sisu-build-api",
-	"glassfish-servlet-api": "servlet-api",
 	"sisu": "sisu-inject",
-	##
-	
 	"sonatype-oss-parent": "oss-parent-pom",
 	"velocity": "velocity-engine",
 }
