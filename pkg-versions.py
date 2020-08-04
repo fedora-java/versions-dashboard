@@ -363,7 +363,7 @@ def row_to_str(versions: [str], tags: {str : str}) -> str:
 	result += '<td '
 	
 	if versions[upstream_index][1] is None:
-		result += 'colspan="2"'
+		result += 'colspan="2" '
 	
 	result += 'class="' + html_class + '">' + versions[upstream_index][0] + '</td>\n'
 	
