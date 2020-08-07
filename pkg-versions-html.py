@@ -47,5 +47,5 @@ env.globals.update(vars(__builtins__))
 template = env.get_template(template_path)
 output = template.render(report_dict = report_dict)
 
-with open("versions.html", "w") as output_file:
+with open(output_path, "w") as output_file:
 	output_file.write(output)
