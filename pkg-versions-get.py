@@ -37,43 +37,42 @@ from concurrent.futures import ThreadPoolExecutor as thread_pool
 ################################################################################
 
 # The mapping from package name to package name used in mbi-bootstrap repository
-def bootstrap_package_name(name):
-	return {
-		"apache-commons-beanutils": "commons-beanutils",
-		"apache-commons-cli": "commons-cli",
-		"apache-commons-codec": "commons-codec",
-		"apache-commons-collections": "commons-collections",
-		"apache-commons-compress": "commons-compress",
-		"apache-commons-io": "commons-io",
-		"apache-commons-jxpath": "commons-jxpath",
-		"apache-commons-lang3": "commons-lang",
-		"apache-commons-logging": "commons-logging",
-		"apache-commons-parent": "commons-parent-pom",
-		"apache-parent": "apache-pom",
-		"aqute-bnd": "bnd",
-		"atinject": "injection-api",
-		"beust-jcommander": "jcommander",
-		"cdi-api": "cdi",
-		"felix-parent": "felix-parent-pom",
-		"glassfish-annotation-api": "common-annotations-api",
-		"glassfish-servlet-api": "servlet-api",
-		"google-guice": "guice",
-		"httpcomponents-project": "httpcomponents-parent-pom",
-		"java_cup": "cup",
-		"junit": "junit4",
-		"maven-parent": "maven-parent-pom",
-		"maven-plugin-build-helper": "build-helper-maven-plugin",
-		"maven-plugin-bundle": "maven-bundle-plugin",
-		"mojo-parent": "mojo-parent-pom",
-		"objectweb-asm": "asm",
-		"osgi-annotation": "osgi",
-		"osgi-compendium": "osgi",
-		"osgi-core": "osgi",
-		"plexus-build-api": "sisu-build-api",
-		"sisu": "sisu-inject",
-		"sonatype-oss-parent": "oss-parent-pom",
-		"velocity": "velocity-engine",
-	}.get(name, name)
+bootstrap_package_name = {
+	"apache-commons-beanutils": "commons-beanutils",
+	"apache-commons-cli": "commons-cli",
+	"apache-commons-codec": "commons-codec",
+	"apache-commons-collections": "commons-collections",
+	"apache-commons-compress": "commons-compress",
+	"apache-commons-io": "commons-io",
+	"apache-commons-jxpath": "commons-jxpath",
+	"apache-commons-lang3": "commons-lang",
+	"apache-commons-logging": "commons-logging",
+	"apache-commons-parent": "commons-parent-pom",
+	"apache-parent": "apache-pom",
+	"aqute-bnd": "bnd",
+	"atinject": "injection-api",
+	"beust-jcommander": "jcommander",
+	"cdi-api": "cdi",
+	"felix-parent": "felix-parent-pom",
+	"glassfish-annotation-api": "common-annotations-api",
+	"glassfish-servlet-api": "servlet-api",
+	"google-guice": "guice",
+	"httpcomponents-project": "httpcomponents-parent-pom",
+	"java_cup": "cup",
+	"junit": "junit4",
+	"maven-parent": "maven-parent-pom",
+	"maven-plugin-build-helper": "build-helper-maven-plugin",
+	"maven-plugin-bundle": "maven-bundle-plugin",
+	"mojo-parent": "mojo-parent-pom",
+	"objectweb-asm": "asm",
+	"osgi-annotation": "osgi",
+	"osgi-compendium": "osgi",
+	"osgi-core": "osgi",
+	"plexus-build-api": "sisu-build-api",
+	"sisu": "sisu-inject",
+	"sonatype-oss-parent": "oss-parent-pom",
+	"velocity": "velocity-engine",
+}
 
 def normalize_version(version: str) -> str:
 	version_name = version[:]
@@ -270,7 +269,7 @@ def get_mbi_bootstrap_versions(package_names: {str}) -> {str: str}:
 		return content[begin : end]
 	
 	for package_name in package_names:
-		futures.append(request_pool.submit(get_mbi_bootstrap_version, bootstrap_package_name(package_name)))
+		futures.append(request_pool.submit(get_mbi_bootstrap_version, bootstrap_package_name.get(package_name, package_name)))
 	
 	for package_name, project_version in zip(package_names, futures):
 		result[package_name] = project_version.result()
@@ -340,7 +339,7 @@ for fedora_version in [f"f{i}" for i in range(28, 34)]:
 
 mbi_bootstrap = get_mbi_bootstrap_packages()
 futures.append(request_pool.submit(get_mbi_bootstrap_versions,
-	{name for name in result.keys() if bootstrap_package_name(name) in mbi_bootstrap}))
+	{name for name in result.keys() if bootstrap_package_name.get(name, name) in mbi_bootstrap}))
 column_names.append("mbi-bootstrap")
 
 futures.append(request_pool.submit(get_mbi_versions, result.keys()))
@@ -361,6 +360,7 @@ with open(output_path, "w") as output_file:
 	result = {
 		"time-generated": time.ctime(),
 		"host": os.environ.get("HOSTNAME", "local"),
+		"version-columns": column_names[:-1],
 		"versions": result,
 	}
 	json.dump(result, output_file, indent = 2)

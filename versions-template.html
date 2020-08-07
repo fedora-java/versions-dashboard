@@ -1,0 +1,34 @@
+<link rel=stylesheet href=mystyle.css>
+<table>
+	<tr>
+		<th rowspan = 2>Package name</th>
+		<th colspan = {{len(report_dict["version-columns"])}}>Versions</th>
+		<th rowspan = 2>Comments</th>
+		<th rowspan = 2 colspan = 3>Links (MBI)</th>
+	</tr>
+	<tr>
+		{% for version_name in report_dict["version-columns"] %}
+		<th>{{version_name}}</th>
+		{% endfor %}
+	</tr>
+	
+	{% for column_name in report_dict["columns"] %}
+	<th>{{column_name}}</th>
+	{% endfor %}
+	
+	{% for package in sorted(report_dict["versions"]) %}
+	<tr>
+		<td>{{package}}</td>
+		<td colspan = 10></td>
+		<td>
+			&nbsp<a href="https://src.fedoraproject.org/fork/mbi/rpms/{{package}}" target="_blank">dist-git</a>&nbsp
+		</td>
+		<td>
+			&nbsp<a href="https://koji.kjnet.xyz/koji/packageinfo?packageID={{package}}" target="_blank">Koji</a>&nbsp
+		</td>
+		<td>
+			&nbsp<a href="https://koschei.kjnet.xyz/koschei/package/{{package}}?collection=jp" target="_blank">Koschei</a>&nbsp
+		</td>
+	</tr>
+	{% endfor %}
+</table>
