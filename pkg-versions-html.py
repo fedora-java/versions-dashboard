@@ -26,6 +26,7 @@
 import jinja2
 import json
 import os
+import rpm
 
 ################################################################################
 
@@ -35,14 +36,17 @@ template_path = "versions-template.html"
 
 ################################################################################
 
+def version_compare(left: str, right: str) -> int:
+	return rpm.labelCompare(("", left, ""), ("", right, ""))
+
+################################################################################
+
 with open(input_path, "r") as input_file:
 	report_dict = json.load(input_file)
 
-env = jinja2.Environment(
-	loader = jinja2.FileSystemLoader("."),
-    autoescape = jinja2.select_autoescape(["html"]),
-)
+env = jinja2.Environment(loader = jinja2.FileSystemLoader("."))
 env.globals.update(vars(__builtins__))
+env.globals.update(globals())
 
 template = env.get_template(template_path)
 output = template.render(report_dict = report_dict)

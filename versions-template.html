@@ -1,34 +1,92 @@
-<link rel=stylesheet href=mystyle.css>
+<!DOCTYPE html>
+
+<link rel = stylesheet href = mystyle.css>
 <table>
 	<tr>
 		<th rowspan = 2>Package name</th>
-		<th colspan = {{len(report_dict["version-columns"])}}>Versions</th>
+		<th colspan = {{len(sum(report_dict["version-columns"].values(), [])) + len(report_dict["upstream-columns"])}}>Versions</th>
 		<th rowspan = 2>Comments</th>
 		<th rowspan = 2 colspan = 3>Links (MBI)</th>
 	</tr>
 	<tr>
-		{% for version_name in report_dict["version-columns"] %}
-		<th>{{version_name}}</th>
+		{% for version_name in report_dict["version-columns"]["fedora"] %}
+			<th>{{version_name}}</th>
 		{% endfor %}
+		
+		{% for version_name in report_dict["version-columns"]["mbi"] %}
+			<th>{{version_name}}</th>
+		{% endfor %}
+		
+		<th colspan = {{len(report_dict["upstream-columns"])}}>Upstream</th>
 	</tr>
 	
-	{% for column_name in report_dict["columns"] %}
-	<th>{{column_name}}</th>
-	{% endfor %}
-	
-	{% for package in sorted(report_dict["versions"]) %}
+	{% for package_name in sorted(report_dict["versions"]) %}
 	<tr>
-		<td>{{package}}</td>
-		<td colspan = 10></td>
-		<td>
-			&nbsp<a href="https://src.fedoraproject.org/fork/mbi/rpms/{{package}}" target="_blank">dist-git</a>&nbsp
-		</td>
-		<td>
-			&nbsp<a href="https://koji.kjnet.xyz/koji/packageinfo?packageID={{package}}" target="_blank">Koji</a>&nbsp
-		</td>
-		<td>
-			&nbsp<a href="https://koschei.kjnet.xyz/koschei/package/{{package}}?collection=jp" target="_blank">Koschei</a>&nbsp
-		</td>
+		{% set package_dict = report_dict["versions"][package_name] %}
+		<td>{{package_name}}</td>
+			
+		{% for version_name in report_dict["version-columns"]["fedora"] %}
+			<td>{{package_dict["fedora"][version_name]}}</td>
+		{% endfor %}
+		
+		{% set mbi_bootstrap_version = package_dict["mbi"].get("mbi-bootstrap") %}
+		{% set mbi_version = package_dict["mbi"]["mbi"] %}
+		{% set latest_upstream_version = package_dict["upstream"]["latest"] %}
+		{% set latest_upstream_stable_version = package_dict["upstream"]["latest-stable"] %}
+		
+		{% if mbi_bootstrap_version != None %}
+			{% set comparison = version_compare(mbi_bootstrap_version, mbi_version) %}
+			{% if comparison < 0 %}
+				<td class = "downgrade">
+			{% elif comparison > 0 %}
+				<td class = "upgrade">
+			{% else %}
+				<td>
+			{% endif %}
+				{{mbi_bootstrap_version}}</td>
+		{% else %}
+			<td></td>
+		{% endif %}
+		
+		{% set comparison = version_compare(mbi_version, latest_upstream_version) %}
+		{% if comparison < 0 %}
+			{% if version_compare(mbi_version, latest_upstream_stable_version) >= 0 %}
+				<td class = "stable-up-to-date">
+			{% else %}
+				<td class = "downgrade">
+			{% endif %}
+		{% elif comparison > 0 %}
+			<td class = "upgrade">
+		{% else %}
+			<td>
+		{% endif %}
+			{{mbi_version}}</td>
+		
+		{% set latest = package_dict["upstream"]["latest"] %}
+		{% set latest_stable = package_dict["upstream"]["latest-stable"] %}
+		{% if latest == latest_stable %}
+			<td colspan = 2>{{latest}}</td>
+		{% else %}
+			<td>{{latest}}</td>
+			<td>{{latest_stable}}</td>
+		{% endif%}
+			
+			<td>
+			{% set comments = package_dict.get("comments") %}
+			{% if comments != None %}
+				{{comments["comment"]}}
+			{% endif%}
+			</td>
+			
+			<td>
+				&nbsp<a href="https://src.fedoraproject.org/fork/mbi/rpms/{{package_name}}" target="_blank">dist-git</a>&nbsp
+			</td>
+			<td>
+				&nbsp<a href="https://koji.kjnet.xyz/koji/packageinfo?packageID={{package_name}}" target="_blank">Koji</a>&nbsp
+			</td>
+			<td>
+				&nbsp<a href="https://koschei.kjnet.xyz/package/{{package_name}}?collection=jp" target="_blank">Koschei</a>&nbsp
+			</td>
 	</tr>
 	{% endfor %}
 </table>

@@ -182,21 +182,19 @@ def get_upstream_versions(package_names: [str]) -> {str: {str: str}}:
 	
 	return result
 
-def get_upstream_versions_cached(package_names: [str]) -> {str: (str, str)}:
+def get_upstream_versions_cached(package_names: [str]) -> {str: {str: str}}:
 	update_cache = False
 	result = {}
 	time_retrieved_literal = "time-retrieved"
 	
 	if not os.path.exists(upstream_cache_path):
 		update_cache = True
-		
 	else:
 		with open(upstream_cache_path, "r") as cache_file:
 			cache = json.load(cache_file)
 		
 		if time.time() - cache[time_retrieved_literal] > upstream_cache_interval:
 			update_cache = True
-		
 		else:
 			result = cache["packages"]
 	
@@ -204,8 +202,10 @@ def get_upstream_versions_cached(package_names: [str]) -> {str: (str, str)}:
 		result = get_upstream_versions(package_names)
 		
 		with open(upstream_cache_path, "w") as cache_file:
-			result = {time_retrieved_literal: time.time(), "packages": result}
-			json.dump(result, cache_file, indent = 2)
+			json.dump({
+				time_retrieved_literal: time.time(),
+				"packages": result
+			}, cache_file, indent = 2)
 			cache_file.write("\n")
 	
 	return result
@@ -287,13 +287,14 @@ def get_comments() -> {str : {str: str}}:
 	
 	result = dict()
 	name = str()
-	comment = str()
+	comment = None
 
 	for line in response.text.splitlines():
 		# A new package name
 		if line.startswith("#") and not line.startswith("##"):
 			name = line[1:].strip()
 			result[name] = dict()
+			comment = str()
 		
 		# A new tag
 		elif line.startswith("##"):
@@ -307,7 +308,7 @@ def get_comments() -> {str : {str: str}}:
 				match = re.match("<p>(.*)</p>\\s*", markdown2.markdown(comment), re.DOTALL)
 				result[name]["comment"] = match.group(1)
 			name = str()
-			comment = str()
+			comment = None
 		
 		elif name:
 			comment += line
@@ -330,37 +331,53 @@ request_pool = thread_pool(40)
 # Main function
 
 result = {pkg: {} for pkg in get_packages()}
-futures = list()
-column_names = list()
+futures = dict()
 
+version_columns = {
+	"fedora": [f"f{i}" for i in range(28, 34)],
+	"mbi": ["mbi-bootstrap", "mbi"],
+}
+
+futures["fedora"] = dict()
 for fedora_version in [f"f{i}" for i in range(28, 34)]:
-	futures.append(request_pool.submit(get_fedora_versions, result.keys(), fedora_version))
-	column_names.append(fedora_version)
+	futures["fedora"][fedora_version] = request_pool.submit(get_fedora_versions, result.keys(), fedora_version)
 
+futures["mbi"] = dict()
 mbi_bootstrap = get_mbi_bootstrap_packages()
-futures.append(request_pool.submit(get_mbi_bootstrap_versions,
-	{name for name in result.keys() if bootstrap_package_name.get(name, name) in mbi_bootstrap}))
-column_names.append("mbi-bootstrap")
+futures["mbi"]["mbi-bootstrap"] = request_pool.submit(get_mbi_bootstrap_versions,
+	{name for name in result.keys() if bootstrap_package_name.get(name, name) in mbi_bootstrap})
 
-futures.append(request_pool.submit(get_mbi_versions, result.keys()))
-column_names.append("mbi")
+futures["mbi"]["mbi"] = request_pool.submit(get_mbi_versions, result.keys())
+futures["upstream"] = request_pool.submit(get_upstream_versions_cached, result.keys())
+futures["comments"] = request_pool.submit(get_comments)
 
-futures.append(request_pool.submit(get_upstream_versions_cached, result.keys()))
-column_names.append("upstream")
+for column_name in version_columns.keys():
+	for k, dic in result.items():
+		dic[column_name] = dict()
+	
+	for column_version, versions_future in futures[column_name].items():
+		versions = versions_future.result()
+		for package, version in versions.items():
+			result[package][column_name][column_version] = version
 
-futures.append(request_pool.submit(get_comments))
-column_names.append("comments")
+for package, upstream_versions in futures["upstream"].result().items():
+	result[package]["upstream"] = upstream_versions
 
-for i in range(len(column_names)):
-	inner = futures[i].result()
-	for pkg, dic in result.items():
-		dic[column_names[i]] = inner.get(pkg)
+for package, comments in futures["comments"].result().items():
+	try:
+		result[package]["comments"] = comments
+	except KeyError:
+		print(f"Package {package} has comments on the page but is not present in Koji")
 
 with open(output_path, "w") as output_file:
 	result = {
 		"time-generated": time.ctime(),
 		"host": os.environ.get("HOSTNAME", "local"),
-		"version-columns": column_names[:-1],
+		"version-columns": {
+			"fedora": [f for f in futures["fedora"]],
+			"mbi": [m for m in futures["mbi"]],
+		},
+		"upstream-columns": ["latest", "latest-stable"],
 		"versions": result,
 	}
 	json.dump(result, output_file, indent = 2)
