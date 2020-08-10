@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang = "en">
+
 <head>
-<meta charset = "utf-8"/>
+	<meta charset = "utf-8"/>
 </head>
 
-<link rel = stylesheet href = mystyle.css>
+<link rel = stylesheet href = style.css>
 
 <table>
 	<tr>
@@ -52,22 +53,36 @@
 		{% set latest_upstream_version = package_dict["upstream"]["latest"] %}
 		{% set latest_upstream_stable_version = package_dict["upstream"]["latest-stable"] %}
 		
+		{% if package_dict.get("comments") != None %}
+			{% set correct_version = package_dict["comments"].get("correct-version") %}
+			{% set keep_version = package_dict["comments"].get("keep-version") %}
+		{% endif %}
+		
 		{% if mbi_bootstrap_version != None %}
 			{% set comparison = version_compare(mbi_bootstrap_version, mbi_version) %}
-			{% if comparison < 0 %}
+			
+			{% if correct_version != None and mbi_bootstrap_version == correct_version %}
+				<td class = "correct-version">
+			{% elif keep_version != None and mbi_bootstrap_version == keep_version %}
+				<td class = "keep-version">
+			{% elif comparison < 0 %}
 				<td class = "downgrade">
 			{% elif comparison > 0 %}
 				<td class = "upgrade">
 			{% else %}
 				<td>
 			{% endif %}
-				{{mbi_bootstrap_version}}</td>
+			{{mbi_bootstrap_version}}</td>
 		{% else %}
 			<td></td>
 		{% endif %}
 		
 		{% set comparison = version_compare(mbi_version, latest_upstream_version) %}
-		{% if comparison < 0 %}
+		{% if correct_version != None and mbi_version == correct_version %}
+			<td class = "correct-version">
+		{% elif keep_version != None and mbi_bootstrap_version == keep_version %}
+			<td class = "keep-version">
+		{% elif comparison < 0 %}
 			{% if version_compare(mbi_version, latest_upstream_stable_version) >= 0 %}
 				<td class = "stable-up-to-date">
 			{% else %}
@@ -78,7 +93,7 @@
 		{% else %}
 			<td>
 		{% endif %}
-			{{mbi_version}}</td>
+		{{mbi_version}}</td>
 		
 		{% set latest = package_dict["upstream"]["latest"] %}
 		{% set latest_stable = package_dict["upstream"]["latest-stable"] %}
@@ -89,23 +104,56 @@
 			<td>{{latest_stable}}</td>
 		{% endif%}
 			
-			<td>
-			{% set comments = package_dict.get("comments") %}
-			{% if comments != None %}
-				{{comments["comment"]}}
-			{% endif%}
-			</td>
-			
-			<td>
-				&nbsp<a href="https://src.fedoraproject.org/fork/mbi/rpms/{{package_name}}" target="_blank">dist-git</a>&nbsp
-			</td>
-			<td>
-				&nbsp<a href="https://koji.kjnet.xyz/koji/packageinfo?packageID={{package_name}}" target="_blank">Koji</a>&nbsp
-			</td>
-			<td>
-				&nbsp<a href="https://koschei.kjnet.xyz/package/{{package_name}}?collection=jp" target="_blank">Koschei</a>&nbsp
-			</td>
+		<td>
+		{% set comments = package_dict.get("comments") %}
+		{% if comments != None %}
+			{{comments["comment"]}}
+		{% endif%}
+		</td>
+		
+		<td>
+			&nbsp<a href="https://src.fedoraproject.org/fork/mbi/rpms/{{package_name}}" target="_blank">dist-git</a>&nbsp
+		</td>
+		<td>
+			&nbsp<a href="https://koji.kjnet.xyz/koji/packageinfo?packageID={{package_name}}" target="_blank">Koji</a>&nbsp
+		</td>
+		<td>
+			&nbsp<a href="https://koschei.kjnet.xyz/package/{{package_name}}?collection=jp" target="_blank">Koschei</a>&nbsp
+		</td>
 	</tr>
 	{% endfor %}
 </table>
+
+<p>
+<strong>Legend:</strong>
+<div>
+	<div class = "box" style = "background-color: red;"></div>
+	&nbsp Current version is older than its upstream version
+</div>
+<br>
+<div>
+	<div class = "box" style = "background-color: blue;"></div>
+	&nbsp Current version is newer than its upstream version.
+	This can indicate issues retrieving the upstream version.
+</div>
+<br>
+<div>
+	<div class = "box" style = "background-color: darkgreen;"></div>
+	&nbsp Current version is older than its upstream version which is currently
+	pre-release but newer or up-to-date with the upstream latest stable version.
+</div>
+<br>
+<div>
+	<div class = "box" style = "background-color: orange;"></div>
+	&nbsp The version should be kept at the current version
+	for reasons specified in the comment.
+</div>
+<br>
+<div>
+	<div class = "box" style = "background-color: darkorchid;"></div>
+	&nbsp The retrieved upstream version is incorrect and
+	current version is equal to the latest correct upstream version.
+</div>
+</p>
+
 </html>
