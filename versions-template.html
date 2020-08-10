@@ -25,14 +25,27 @@
 		<th colspan = {{len(report_dict["upstream-columns"])}}>Upstream</th>
 	</tr>
 	
+	{% set fedora_list = report_dict["version-columns"]["fedora"] %}
 	{% for package_name in sorted(report_dict["versions"]) %}
 	<tr>
 		{% set package_dict = report_dict["versions"][package_name] %}
 		<td>{{package_name}}</td>
-			
-		{% for version_name in report_dict["version-columns"]["fedora"] %}
-			<td>{{package_dict["fedora"][version_name]}}</td>
+		
+		{% set previous_version = namespace(value = package_dict["fedora"][fedora_list[0]]) %}
+		{% set current_version = namespace(value = None) %}
+		{% set colspan = namespace(value = 1) %}
+		
+		{% for index in range(1, len(fedora_list)) %}
+			{% set current_version.value = package_dict["fedora"][fedora_list[index]] %}
+			{% if previous_version.value == current_version.value %}
+				{% set colspan.value = colspan.value + 1 %}
+			{% else %}
+				<td colspan = {{colspan.value}}>{{previous_version.value}}</td>
+				{% set colspan.value = 1 %}
+				{% set previous_version.value = current_version.value %}
+			{% endif %}
 		{% endfor %}
+		<td colspan = {{colspan.value}}>{{current_version.value}}</td>
 		
 		{% set mbi_bootstrap_version = package_dict["mbi"].get("mbi-bootstrap") %}
 		{% set mbi_version = package_dict["mbi"]["mbi"] %}
