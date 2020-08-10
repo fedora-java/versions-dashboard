@@ -12,4 +12,4 @@ RUN : \
 COPY . /opt/versions-dashboard
 
 USER versions-dashboard
-ENTRYPOINT ["/opt/versions-dashboard/pkg-versions.py"]
+ENTRYPOINT ["/opt/versions-dashboard/pkg-versions-get.py && /opt/versions-dashboard/pkg-versions-html.py"]

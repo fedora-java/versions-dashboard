@@ -1,0 +1,40 @@
+.downgrade
+{
+	font-weight: bold;
+	color: red;
+}
+.upgrade
+{
+	font-weight: bold;
+	color: blue;
+}
+.keep-version
+{
+	font-weight: bold;
+	color: orange;
+}
+.correct-version
+{
+	font-weight: bold;
+	color: darkorchid;
+}
+.stable-up-to-date
+{
+	font-weight: bold;
+	color: darkgreen;
+}
+
+table.versions, table.versions th, table.versions td
+{
+	border: 1px solid black;
+}
+
+table.versions tr:hover
+{
+	background-color: lightblue;
+}
+
+.box
+{
+	width: 1em;
+}

@@ -7,7 +7,7 @@
 
 <link rel = stylesheet href = style.css>
 
-<table>
+<table class = "versions">
 	<tr>
 		<th rowspan = 2>Package name</th>
 		<th colspan = {{len(sum(report_dict["version-columns"].values(), [])) + len(report_dict["upstream-columns"])}}>Versions</th>
@@ -126,34 +126,43 @@
 
 <p>
 <strong>Legend:</strong>
-<div>
-	<div class = "box" style = "background-color: red;"></div>
-	&nbsp Current version is older than its upstream version
-</div>
-<br>
-<div>
-	<div class = "box" style = "background-color: blue;"></div>
-	&nbsp Current version is newer than its upstream version.
-	This can indicate issues retrieving the upstream version.
-</div>
-<br>
-<div>
-	<div class = "box" style = "background-color: darkgreen;"></div>
-	&nbsp Current version is older than its upstream version which is currently
-	pre-release but newer or up-to-date with the upstream latest stable version.
-</div>
-<br>
-<div>
-	<div class = "box" style = "background-color: orange;"></div>
-	&nbsp The version should be kept at the current version
-	for reasons specified in the comment.
-</div>
-<br>
-<div>
-	<div class = "box" style = "background-color: darkorchid;"></div>
-	&nbsp The retrieved upstream version is incorrect and
-	current version is equal to the latest correct upstream version.
-</div>
+<table>
+	<tr>
+		<td class = "box" style = "background-color: red;"></td>
+		<td>
+			Current version is older than its upstream version
+		</td>
+	</tr>
+	<tr>
+		<td class = "box" style = "background-color: blue;"></td>
+		<td>
+			Current version is newer than its upstream version.
+			This can indicate issues retrieving the upstream version.
+		</td>
+	</tr>
+	<tr>
+		<td class = "box" style = "background-color: darkgreen;"></td>
+		<td>
+			Current version is older than its upstream version which is
+			currently pre-release but newer or up-to-date with the upstream
+			latest stable version.
+		</td>
+	</tr>
+	<tr>
+		<td class = "box" style = "background-color: orange;"></td>
+		<td>
+			The version should be kept at the current version for reasons
+			specified in the comment.
+		</td>
+	</tr>
+	<tr>
+		<td class = "box" style = "background-color: darkorchid;"></td>
+		<td>
+			The retrieved upstream version is incorrect and current version is
+			equal to the latest correct upstream version.
+		</td>
+	</tr>
+</table>
 </p>
 
 </html>

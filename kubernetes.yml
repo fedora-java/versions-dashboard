@@ -111,6 +111,8 @@ spec:
             - name: versions-backend
               image: quay.io/mizdebsk/versions-dashboard:latest
               env:
+                - name: OUT_JSON
+                  value: /srv/versions.json
                 - name: OUT_HTML
                   value: /srv/index.html
                 - name: CACHE_FILE
