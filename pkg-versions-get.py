@@ -403,7 +403,7 @@ for package, comments in futures["comments"].result().items():
 with open(output_path, "w") as output_file:
 	result = {
 		"time-generated": time.ctime(),
-		"host": os.environ.get("HOSTNAME", "local"),
+		"hostname": os.environ.get("HOSTNAME", "local"),
 		"version-columns": {
 			"fedora": [f for f in futures["fedora"]],
 			"mbi": [m for m in futures["mbi"]],
