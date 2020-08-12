@@ -13,4 +13,4 @@ RUN : \
 COPY . /opt/versions-dashboard
 
 USER versions-dashboard
-ENTRYPOINT ["/usr/bin/sh", "-c", "/opt/versions-dashboard/pkg-versions-get.py && /opt/versions-dashboard/pkg-versions-html.py"]
+ENTRYPOINT ["/usr/bin/sh", "-c", "cd /opt/versions-dashboard && ./pkg-versions-get.py && ./pkg-versions-html.py"]
