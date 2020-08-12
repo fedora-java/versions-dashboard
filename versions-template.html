@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang = "en">
+<html lang="en">
 
 <head>
-	<meta charset = "utf-8"/>
+	<meta charset="utf-8"/>
 </head>
 
-<link rel = stylesheet href = mystyle.css>
+<link rel="stylesheet" href="mystyle.css">
 
-<table class = "versions">
-	<tr class = "header">
-		<th rowspan = 2>Package name</th>
-		<th colspan = {{len(sum(report_dict["version-columns"].values(), [])) + len(report_dict["upstream-columns"])}}>Versions</th>
-		<th rowspan = 2>Comments</th>
-		<th rowspan = 2 colspan = 3>Links (MBI)</th>
+<table class="versions">
+	<tr class="header">
+		<th rowspan="2">Package name</th>
+		<th colspan="{{len(sum(report_dict["version-columns"].values(), [])) + len(report_dict["upstream-columns"])}}">Versions</th>
+		<th rowspan="2">Comments</th>
+		<th rowspan="2" colspan="3">Links (MBI)</th>
 	</tr>
-	<tr class = "header">
+	<tr class="header">
 		{% for version_name in report_dict["version-columns"]["fedora"] %}
 			<th>{{version_name}}</th>
 		{% endfor %}
@@ -23,7 +23,7 @@
 			<th>{{version_name}}</th>
 		{% endfor %}
 		
-		<th colspan = {{len(report_dict["upstream-columns"])}}>Upstream</th>
+		<th colspan="{{len(report_dict["upstream-columns"])}}">Upstream</th>
 	</tr>
 	
 	{% set fedora_list = report_dict["version-columns"]["fedora"] %}
@@ -41,12 +41,12 @@
 			{% if previous_version.value == current_version.value %}
 				{% set colspan.value = colspan.value + 1 %}
 			{% else %}
-				<td colspan = {{colspan.value}}>{{previous_version.value}}</td>
+				<td colspan="{{colspan.value}}">{{previous_version.value}}</td>
 				{% set colspan.value = 1 %}
 				{% set previous_version.value = current_version.value %}
 			{% endif %}
 		{% endfor %}
-		<td colspan = {{colspan.value}}>{{current_version.value}}</td>
+		<td colspan="{{colspan.value}}">{{current_version.value}}</td>
 		
 		{% set mbi_bootstrap_version = package_dict["mbi"].get("mbi-bootstrap") %}
 		{% set mbi_version = package_dict["mbi"]["mbi"] %}
@@ -62,13 +62,13 @@
 			{% set comparison = version_compare(mbi_bootstrap_version, mbi_version) %}
 			
 			{% if correct_version != None and mbi_bootstrap_version == correct_version %}
-				<td class = "correct-version">
+				<td class="correct-version">
 			{% elif keep_version != None and mbi_bootstrap_version == keep_version %}
-				<td class = "keep-version">
+				<td class="keep-version">
 			{% elif comparison < 0 %}
-				<td class = "downgrade">
+				<td class="downgrade">
 			{% elif comparison > 0 %}
-				<td class = "upgrade">
+				<td class="upgrade">
 			{% else %}
 				<td>
 			{% endif %}
@@ -79,17 +79,17 @@
 		
 		{% set comparison = version_compare(mbi_version, latest_upstream_version) %}
 		{% if correct_version != None and mbi_version == correct_version %}
-			<td class = "correct-version">
+			<td class="correct-version">
 		{% elif keep_version != None and mbi_bootstrap_version == keep_version %}
-			<td class = "keep-version">
+			<td class="keep-version">
 		{% elif comparison < 0 %}
 			{% if version_compare(mbi_version, latest_upstream_stable_version) >= 0 %}
-				<td class = "stable-up-to-date">
+				<td class="stable-up-to-date">
 			{% else %}
-				<td class = "downgrade">
+				<td class="downgrade">
 			{% endif %}
 		{% elif comparison > 0 %}
-			<td class = "upgrade">
+			<td class="upgrade">
 		{% else %}
 			<td>
 		{% endif %}
@@ -98,7 +98,7 @@
 		{% set latest = package_dict["upstream"]["latest"] %}
 		{% set latest_stable = package_dict["upstream"]["latest-stable"] %}
 		{% if latest == latest_stable %}
-			<td colspan = 2>{{latest}}</td>
+			<td colspan="2">{{latest}}</td>
 		{% else %}
 			<td>{{latest}}</td>
 			<td>{{latest_stable}}</td>
@@ -128,20 +128,20 @@
 <strong>Legend:</strong>
 <table>
 	<tr>
-		<td class = "box" style = "background-color: red;"></td>
+		<td class="box" style="background-color: red;"></td>
 		<td>
 			Current version is older than its upstream version
 		</td>
 	</tr>
 	<tr>
-		<td class = "box" style = "background-color: blue;"></td>
+		<td class="box" style="background-color: blue;"></td>
 		<td>
 			Current version is newer than its upstream version.
 			This can indicate issues retrieving the upstream version.
 		</td>
 	</tr>
 	<tr>
-		<td class = "box" style = "background-color: darkgreen;"></td>
+		<td class="box" style="background-color: darkgreen;"></td>
 		<td>
 			Current version is older than its upstream version which is
 			currently pre-release but newer or up-to-date with the upstream
@@ -149,14 +149,14 @@
 		</td>
 	</tr>
 	<tr>
-		<td class = "box" style = "background-color: orange;"></td>
+		<td class="box" style="background-color: orange;"></td>
 		<td>
 			The version should be kept at the current version for reasons
 			specified in the comment.
 		</td>
 	</tr>
 	<tr>
-		<td class = "box" style = "background-color: darkorchid;"></td>
+		<td class="box" style="background-color: darkorchid;"></td>
 		<td>
 			The retrieved upstream version is incorrect and current version is
 			equal to the latest correct upstream version.
