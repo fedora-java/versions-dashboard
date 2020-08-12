@@ -8,13 +8,13 @@
 <link rel = stylesheet href = style.css>
 
 <table class = "versions">
-	<tr>
+	<tr class = "header">
 		<th rowspan = 2>Package name</th>
 		<th colspan = {{len(sum(report_dict["version-columns"].values(), [])) + len(report_dict["upstream-columns"])}}>Versions</th>
 		<th rowspan = 2>Comments</th>
 		<th rowspan = 2 colspan = 3>Links (MBI)</th>
 	</tr>
-	<tr>
+	<tr class = "header">
 		{% for version_name in report_dict["version-columns"]["fedora"] %}
 			<th>{{version_name}}</th>
 		{% endfor %}

@@ -29,7 +29,7 @@ table.versions, table.versions th, table.versions td
 	border: 1px solid black;
 }
 
-table.versions tr:hover
+table.versions tr:not(.header):hover
 {
 	background-color: lightblue;
 }
