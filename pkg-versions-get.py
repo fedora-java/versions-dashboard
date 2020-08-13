@@ -370,7 +370,7 @@ version_columns = {
 }
 
 futures["fedora"] = dict()
-for fedora_version in [f"f{i}" for i in range(28, 34)]:
+for fedora_version in version_columns["fedora"]:
 	futures["fedora"][fedora_version] = request_pool.submit(get_fedora_versions, result.keys(), fedora_version)
 
 futures["mbi"] = dict()
