@@ -365,7 +365,7 @@ result = {pkg: {} for pkg in get_packages()}
 futures = dict()
 
 version_columns = {
-	"fedora": [f"f{i}" for i in range(28, 34)],
+	"fedora": [f"f{i}" for i in range(28, 35)],
 	"mbi": ["mbi-bootstrap", "mbi"],
 }
 
