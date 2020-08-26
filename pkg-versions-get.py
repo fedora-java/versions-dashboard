@@ -356,7 +356,7 @@ output_path = os.environ.get("OUT_JSON", "versions.json")
 upstream_cache_interval = 1 * 60 * 60
 upstream_cache_path = os.environ.get("CACHE_FILE", "/tmp/pkg-versions-upstream-cache.json")
 
-request_pool = thread_pool(40)
+request_pool = thread_pool(20)
 
 ################################################################################
 # Main function
