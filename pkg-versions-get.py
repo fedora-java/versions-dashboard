@@ -125,7 +125,7 @@ def retry_response(request, retries, **kwargs):
 def get_packages() -> {str}:
 	ks = koji.ClientSession("https://koji.kjnet.xyz/kojihub")
 	return set([package["package_name"] for package in filter(
-		lambda package: not package["blocked"], ks.listPackages("mbi-f32")
+		lambda package: not package["blocked"], ks.listPackages("mbi-f32", inherited = True)
 	)])
 
 def get_upstream_version(package_name: str) -> {str: str}:
@@ -214,7 +214,7 @@ def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
 	ks = koji.ClientSession(url)
 	ks.multicall = True
 	for pkg in package_names:
-		ks.listTagged(tag, package = pkg, latest = True)
+		ks.listTagged(tag, package = pkg, latest = True, inherit = True)
 	result = dict()
 	for [builds] in ks.multiCall(strict = True):
 		if builds:
