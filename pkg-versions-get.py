@@ -125,7 +125,7 @@ def retry_response(request, retries, **kwargs):
 def get_packages() -> {str}:
 	ks = koji.ClientSession("https://koji.kjnet.xyz/kojihub")
 	return set([package["package_name"] for package in filter(
-		lambda package: not package["blocked"], ks.listPackages("jp")
+		lambda package: not package["blocked"], ks.listPackages("mbi-f32")
 	)])
 
 def get_upstream_version(package_name: str) -> {str: str}:
@@ -228,7 +228,7 @@ def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
 	return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
 def get_mbi_versions(package_names: [str]) -> {str: str}:
-	return get_koji_versions(package_names, "https://koji.kjnet.xyz/kojihub", "jp")
+	return get_koji_versions(package_names, "https://koji.kjnet.xyz/kojihub", "mbi-f32")
 
 def get_mbi_bootstrap_packages() -> {str}:
 	result = set()
