@@ -246,7 +246,7 @@ def get_mbi_bootstrap_packages() -> {str}:
 		
 		index += len(pattern)
 		
-		end = content.find(".xml\"", index)
+		end = content.find(".properties\"", index)
 		result.add(content[index : end])
 	
 	return result
@@ -257,11 +257,11 @@ def get_mbi_bootstrap_versions(package_names: {str}) -> {str: str}:
 	futures = list()
 	
 	def get_mbi_bootstrap_version(name: str) -> str:
-		request = retry_response(f"https://pagure.io/mbi/stage2/raw/master/f/project/{name}.xml", 3)
+		request = retry_response(f"https://pagure.io/mbi/stage2/raw/master/f/project/{name}.properties", 3)
 		content = request.content.decode("utf-8")
 		
-		version_str = "<version>"
-		version_str_end = "</version>"
+		version_str = "version="
+		version_str_end = "\n"
 		
 		begin = content.find(version_str) + len(version_str)
 		end = content.find(version_str_end, begin)
