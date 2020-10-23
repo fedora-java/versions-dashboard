@@ -247,7 +247,8 @@ def get_mbi_bootstrap_packages() -> {str}:
 		index += len(pattern)
 		
 		end = content.find(".properties\"", index)
-		result.add(content[index : end])
+		if end < content.find(".xml\"", index):
+		        result.add(content[index : end])
 	
 	return result
 
