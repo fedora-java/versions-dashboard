@@ -324,6 +324,37 @@ async def get_async_data(packages, version_columns):
 			return result
 
 ################################################################################
+# Tests
+
+assert(normalize_version("1.0b3") == "1.0~b3")
+assert(normalize_version("2.5.0-rc1") == "2.5.0~rc1")
+assert(normalize_version("2.0b6") == "2.0~b6")
+assert(normalize_version("2.0.SP1") == "2.0.SP1")
+assert(normalize_version("3_2_12") == "3.2.12")
+assert(normalize_version("1.0-20050927.133100") == "1.0.20050927.133100")
+assert(normalize_version("3.0.1-b11") == "3.0.1~b11")
+assert(normalize_version("5.0.1-b04") == "5.0.1~b04")
+assert(normalize_version("0.11b") == "0.11b")
+assert(normalize_version("1_6_2") == "1.6.2")
+assert(normalize_version("1.0.1.Final") == "1.0.1")
+assert(normalize_version("3.0.0.M1") == "3.0.0~M1")
+assert(normalize_version("6.0-alpha-2") == "6.0~alpha.2")
+assert(normalize_version("4.13-beta-1") == "4.13~beta.1")
+assert(normalize_version("5.5.0-M1") == "5.5.0~M1")
+assert(normalize_version("3.0.0-M2") == "3.0.0~M2")
+assert(normalize_version("3.0.0-M1") == "3.0.0~M1")
+assert(normalize_version("3.0.0-M3") == "3.0.0~M3")
+assert(normalize_version("3.0.0-beta.1") == "3.0.0~beta.1")
+assert(normalize_version("1.0-alpha-2.1") == "1.0~alpha.2.1")
+assert(normalize_version("1.0-alpha-8") == "1.0~alpha.8")
+assert(normalize_version("1.0-alpha-18") == "1.0~alpha.18")
+assert(normalize_version("1.0-alpha-10") == "1.0~alpha.10")
+assert(normalize_version("1.0-beta-7") == "1.0~beta.7")
+assert(normalize_version("1.0-alpha-5") == "1.0~alpha.5")
+assert(normalize_version("2.0-M10") == "2.0~M10")
+assert(normalize_version("7.0.0-beta4") == "7.0.0~beta4")
+
+################################################################################
 # Shared variables
 
 output_path = os.environ.get("OUT_JSON", "versions.json")
