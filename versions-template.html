@@ -27,7 +27,7 @@
 	</tr>
 	
 	{% set fedora_list = report_dict["version-columns"]["fedora"] %}
-	{% for package_name in sorted(report_dict["versions"]) %}
+	{% for package_name in report_dict["versions"] %}
 	<tr>
 		{% set package_dict = report_dict["versions"][package_name] %}
 		<td>{{package_name}}</td>
@@ -48,22 +48,20 @@
 		{% endfor %}
 		<td colspan="{{colspan.value}}">{{current_version.value}}</td>
 		
-		{% set mbi_bootstrap_version = package_dict["mbi"].get("mbi-bootstrap") %}
+		{% set jp_bootstrap_version = package_dict["mbi"].get("jp-bootstrap") %}
 		{% set mbi_version = package_dict["mbi"]["mbi"] %}
 		{% set latest_upstream_version = package_dict["upstream"]["latest"] %}
 		{% set latest_upstream_stable_version = package_dict["upstream"]["latest-stable"] %}
 		
-		{% if package_dict.get("comments") != None %}
-			{% set correct_version = package_dict["comments"].get("correct-version") %}
-			{% set keep_version = package_dict["comments"].get("keep-version") %}
-		{% endif %}
+		{% set correct_version = package_dict["comments"].get("correct-version") %}
+		{% set keep_version = package_dict["comments"].get("keep-version") %}
 		
-		{% if mbi_bootstrap_version != None %}
-			{% set comparison = version_compare(mbi_bootstrap_version, mbi_version) %}
+		{% if jp_bootstrap_version != "" %}
+			{% set comparison = version_compare(jp_bootstrap_version, mbi_version) %}
 			
-			{% if correct_version != None and mbi_bootstrap_version == correct_version %}
+			{% if correct_version != None and jp_bootstrap_version == correct_version %}
 				<td class="correct-version">
-			{% elif keep_version != None and mbi_bootstrap_version == keep_version %}
+			{% elif keep_version != None and jp_bootstrap_version == keep_version %}
 				<td class="keep-version">
 			{% elif comparison < 0 %}
 				<td class="downgrade">
@@ -72,7 +70,7 @@
 			{% else %}
 				<td>
 			{% endif %}
-			{{mbi_bootstrap_version}}</td>
+			{{jp_bootstrap_version}}</td>
 		{% else %}
 			<td></td>
 		{% endif %}
@@ -80,7 +78,7 @@
 		{% set comparison = version_compare(mbi_version, latest_upstream_version) %}
 		{% if correct_version != None and mbi_version == correct_version %}
 			<td class="correct-version">
-		{% elif keep_version != None and mbi_bootstrap_version == keep_version %}
+		{% elif keep_version != None and jp_bootstrap_version == keep_version %}
 			<td class="keep-version">
 		{% elif comparison < 0 %}
 			{% if version_compare(mbi_version, latest_upstream_stable_version) >= 0 %}
