@@ -143,8 +143,9 @@ async def get_async_data(packages, version_columns):
 		while request_retries > 0:
 			try:
 				async with session.get(f"https://release-monitoring.org/api/v2/packages/?name={package_name}&distribution=Fedora") as package_response:
-					if not package_response:
-						raise RuntimeError(f"Upstream package {package_name} not found, number of retries: {retries}")
+					if package_response.status != 200:
+						request_retries -= 1
+						continue
 					
 					project_items = (await package_response.json())["items"]
 					
@@ -160,8 +161,9 @@ async def get_async_data(packages, version_columns):
 		while request_retries > 0:
 			try:
 				async with session.get(f"https://release-monitoring.org/api/v2/projects/?name={project_name}") as project_response:
-					if not project_response:
-						raise RuntimeError(f"Upstream project {project_name} not found, number of retries: {retries}")
+					if project_response.status != 200:
+						request_retries -= 1
+						continue
 					
 					versions = (await project_response.json())["items"][0]["versions"]
 					
@@ -178,6 +180,9 @@ async def get_async_data(packages, version_columns):
 			except ServerDisconnectedError:
 				request_retries -= 1
 				continue
+		
+		if request_retries == 0:
+			raise RuntimeError("release-monitoring.org does not respond with status code 200")
 		
 		return result
 	
@@ -218,8 +223,12 @@ async def get_async_data(packages, version_columns):
 		
 		async def get_mbi_bootstrap_version(name: str) -> str:
 			async with session.get(f"https://raw.githubusercontent.com/fedora-java/javapackages-bootstrap/master/project/{name}.properties") as response:
+				if response.status != 200:
+					raise Exception("Could not obtain comments")
+				
 				content = (await response.content.read()).decode()
 				result = next(re.finditer(r"^version=(.*)$", content, re.MULTILINE)).group(1)
+				
 				return result
 			
 		async with session.get("https://github.com/fedora-java/javapackages-bootstrap/tree/master/project") as response:
@@ -288,6 +297,7 @@ async def get_async_data(packages, version_columns):
 			futures.append(executor.submit(get_mbi_versions, packages))
 			
 			####################################################################
+			# This is where all the processing time is spent
 			
 			jp_bp, upstream, comments = await asyncio.gather(*[
 				get_mbi_bootstrap_versions(),
