@@ -202,7 +202,7 @@ async def get_async_data(packages, version_columns):
 				result = cache["packages"]
 		
 		if update_cache:
-			result = get_upstream_versions(package_names)
+			result = await get_upstream_versions(package_names)
 			
 			with open(upstream_cache_path, "w") as cache_file:
 				json.dump({
