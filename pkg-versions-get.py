@@ -245,7 +245,7 @@ async def get_async_data(packages, version_columns):
 					gzipped = await primary_response.read()
 					text = gzip.decompress(gzipped).decode()
 					
-					pattern = re.compile("<rpm:sourcerpm>(.*)-(.*)-(.*).jp.src.rpm</rpm:sourcerpm>")
+					pattern = re.compile("<rpm:sourcerpm>(.*)-(.*)-.*.jp.src.rpm</rpm:sourcerpm>")
 					
 					for line in text.split():
 						m = re.match(pattern, line)
@@ -268,7 +268,7 @@ async def get_async_data(packages, version_columns):
 		async def get_mbi_bootstrap_version(name: str) -> str:
 			async with session.get(f"https://raw.githubusercontent.com/fedora-java/javapackages-bootstrap/master/project/{name}.properties") as response:
 				if response.status != 200:
-					raise Exception("Could not obtain comments")
+					raise RuntimeError(f"Could not obtain the javapackages-bootstrap version for {name}")
 				
 				content = (await response.content.read()).decode()
 				result = next(re.finditer(r"^version=(.*)$", content, re.MULTILINE)).group(1)
