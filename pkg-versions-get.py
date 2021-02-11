@@ -25,6 +25,7 @@
 
 import aiohttp
 import asyncio
+import gzip
 import json
 import koji
 import markdown2
@@ -132,9 +133,6 @@ def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
 def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
 	return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
-def get_mbi_versions(package_names: [str]) -> {str: str}:
-	return get_koji_versions(package_names, "https://koji.kjnet.xyz/kojihub", "mbi-f32")
-
 async def get_async_data(packages, version_columns):
 	async def get_upstream_version(package_name: str) -> {str: str}:
 		result = dict()
@@ -218,6 +216,52 @@ async def get_async_data(packages, version_columns):
 		
 		return result
 	
+	async def get_mbi_versions() -> {str: str}:
+		result = dict()
+		request_retries = 5
+		compose_prefix = "https://mbs.kjnet.xyz/latest-complete/javapackages-tools/compose"
+		
+		while request_retries > 0:
+			try:
+				async with session.get(f"{compose_prefix}/repodata/repomd.xml") as compose_response:
+					if compose_response.status != 200:
+						request_retries -= 1
+						continue
+					
+					text = await compose_response.text()
+					repo_primary = re.search('''"(repodata/.*?-primary.xml.gz)"''', text).group(1)
+				break
+			except ServerDisconnectedError:
+				request_retries -= 1
+				continue
+		
+		while request_retries > 0:
+			try:
+				async with session.get(f"{compose_prefix}/{repo_primary}") as primary_response:
+					if primary_response.status != 200:
+						request_retries -= 1
+						continue
+					
+					gzipped = await primary_response.read()
+					text = gzip.decompress(gzipped).decode()
+					
+					pattern = re.compile("<rpm:sourcerpm>(.*)-(.*)-(.*).jp.src.rpm</rpm:sourcerpm>")
+					
+					for line in text.split():
+						m = re.match(pattern, line)
+						
+						if m is not None:
+							result[m.group(1)] = m.group(2)
+				break
+			except ServerDisconnectedError:
+				request_retries -= 1
+				continue
+		
+		if request_retries == 0:
+			raise RuntimeError("https://mbs.kjnet.xyz does not respond with status code 200")
+		
+		return result
+	
 	async def get_mbi_bootstrap_versions() -> {str: str}:
 		package_names = None
 		
@@ -294,12 +338,11 @@ async def get_async_data(packages, version_columns):
 			for release in version_columns["fedora"]:
 				futures.append(executor.submit(get_fedora_versions, packages, release))
 			
-			futures.append(executor.submit(get_mbi_versions, packages))
-			
 			####################################################################
 			# This is where all the processing time is spent
 			
-			jp_bp, upstream, comments = await asyncio.gather(*[
+			mbi, jp_boot, upstream, comments = await asyncio.gather(*[
+				get_mbi_versions(),
 				get_mbi_bootstrap_versions(),
 				get_upstream_versions_cached(packages),
 				get_comments(),
@@ -309,8 +352,6 @@ async def get_async_data(packages, version_columns):
 				for i in range(len(version_columns["fedora"]))
 			}
 			
-			mbi = futures[len(version_columns["fedora"])].result()
-			
 			####################################################################
 			
 			result = {package: {
@@ -318,7 +359,7 @@ async def get_async_data(packages, version_columns):
 					for release in  fedoras.keys()
 				},
 				"mbi": {
-					version_columns["mbi"][0]: jp_bp.get(bootstrap_package_name.get(package, package), ""),
+					version_columns["mbi"][0]: jp_boot.get(bootstrap_package_name.get(package, package), ""),
 					version_columns["mbi"][1]: mbi[package],
 				},
 				"upstream": upstream[package],
