@@ -34,7 +34,7 @@ import re
 import sys
 import time
 
-from aiohttp.client_exceptions import ServerDisconnectedError
+from aiohttp.client_exceptions import ClientOSError, ServerDisconnectedError
 from concurrent.futures import ThreadPoolExecutor
 
 ################################################################################
@@ -80,7 +80,7 @@ def normalize_version(version: str) -> str:
 	version_name = version_name.replace("_", ".")
 	version_name = version_name.replace("-", ".")
 	
-	# Match classical version symbols (numbers and dot)
+	# Match the usual version symbols (numbers and dot)
 	match = re.match("([.0-9]*[0-9]+)(.*)", version_name)
 	
 	if not match:
@@ -110,12 +110,6 @@ def normalize_version(version: str) -> str:
 	
 	return leading + trailing
 
-def get_packages() -> {str}:
-	ks = koji.ClientSession("https://koji.kjnet.xyz/kojihub")
-	return set([package["package_name"] for package in filter(
-		lambda package: not package["blocked"], ks.listPackages("mbi-f32", inherited = True)
-	)])
-
 def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
 	ks = koji.ClientSession(url)
 	ks.multicall = True
@@ -133,7 +127,7 @@ def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
 def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
 	return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
-async def get_async_data(packages, version_columns):
+async def get_async_data(version_columns):
 	async def get_upstream_version(package_name: str) -> {str: str}:
 		result = dict()
 		request_retries = 5
@@ -175,7 +169,8 @@ async def get_async_data(packages, version_columns):
 					except StopIteration:
 						pass
 				break
-			except ServerDisconnectedError:
+			except (ClientOSError, ServerDisconnectedError):
+				asyncio.sleep(0.1)
 				request_retries -= 1
 				continue
 		
@@ -332,19 +327,21 @@ async def get_async_data(packages, version_columns):
 		return result
 	
 	async with aiohttp.ClientSession() as session:
-		with ThreadPoolExecutor(max_workers = 16) as executor:
+		with ThreadPoolExecutor(max_workers = 8) as executor:
 			futures = []
 			
+			# In this call we also obtain the package names
+			mbi = await get_mbi_versions()
+			
 			for release in version_columns["fedora"]:
-				futures.append(executor.submit(get_fedora_versions, packages, release))
+				futures.append(executor.submit(get_fedora_versions, mbi.keys(), release))
 			
 			####################################################################
-			# This is where all the processing time is spent
+			# This is where almost all the processing time is spent
 			
-			mbi, jp_boot, upstream, comments = await asyncio.gather(*[
-				get_mbi_versions(),
+			jp_boot, upstream, comments = await asyncio.gather(*[
 				get_mbi_bootstrap_versions(),
-				get_upstream_versions_cached(packages),
+				get_upstream_versions_cached(mbi.keys()),
 				get_comments(),
 			])
 			
@@ -364,7 +361,7 @@ async def get_async_data(packages, version_columns):
 				},
 				"upstream": upstream[package],
 				"comments": {},
-			} for package in sorted(packages)}
+			} for package in sorted(mbi.keys())}
 			
 			for k, v in comments.items():
 				try:
@@ -417,7 +414,6 @@ upstream_cache_path = os.environ.get("CACHE_FILE", "/tmp/pkg-versions-upstream-c
 ################################################################################
 # Main function
 
-packages = get_packages()
 fedora_releases = range(28, 34 + 1)
 
 version_columns = {
@@ -425,7 +421,7 @@ version_columns = {
 	"mbi": ["jp-bootstrap", "mbi"],
 }
 
-versions_result = asyncio.run(get_async_data(packages, version_columns))
+versions_result = asyncio.run(get_async_data(version_columns))
 
 with open(output_path, "w") as output_file:
 	result = {
