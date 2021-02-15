@@ -240,7 +240,7 @@ async def get_async_data(version_columns):
 					gzipped = await primary_response.read()
 					text = gzip.decompress(gzipped).decode()
 					
-					pattern = re.compile("<rpm:sourcerpm>(.*)-(.*)-.*.jp.src.rpm</rpm:sourcerpm>")
+					pattern = re.compile("<rpm:sourcerpm>(.*)-(.*)-.*\..*\.src\.rpm</rpm:sourcerpm>")
 					
 					for line in text.split():
 						m = re.match(pattern, line)
@@ -367,7 +367,7 @@ async def get_async_data(version_columns):
 				try:
 					result[k]["comments"] = v
 				except KeyError:
-					print(f"Warning: package \"{package}\" has comments on the page but is not present in Koji")
+					print(f"Warning: package \"{k}\" has comments on the page but is not present in mbi module")
 			
 			return result
 
