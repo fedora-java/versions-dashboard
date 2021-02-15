@@ -240,7 +240,7 @@ async def get_async_data(version_columns):
 					gzipped = await primary_response.read()
 					text = gzip.decompress(gzipped).decode()
 					
-					pattern = re.compile("<rpm:sourcerpm>(.*)-(.*)-.*\..*\.src\.rpm</rpm:sourcerpm>")
+					pattern = re.compile("<rpm:sourcerpm>([^<]*)-([^-<]*)-([^-<]*)\.([^-<.]*)\.rpm</rpm:sourcerpm>")
 					
 					for line in text.split():
 						m = re.match(pattern, line)
