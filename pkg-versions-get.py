@@ -414,7 +414,7 @@ upstream_cache_path = os.environ.get("CACHE_FILE", "/tmp/pkg-versions-upstream-c
 ################################################################################
 # Main function
 
-fedora_releases = range(28, 34 + 1)
+fedora_releases = range(28, 35 + 1)
 
 version_columns = {
 	"fedora": [f"f{i}" for i in fedora_releases],
