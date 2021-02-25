@@ -214,7 +214,7 @@ async def get_async_data(version_columns):
 	async def get_mbi_versions() -> {str: str}:
 		result = dict()
 		request_retries = 5
-		compose_prefix = "https://mbs.kjnet.xyz/latest-complete/javapackages-tools/compose"
+		compose_prefix = "https://mbs.kjnet.xyz/files/latest-complete/javapackages-tools/compose"
 		
 		while request_retries > 0:
 			try:
