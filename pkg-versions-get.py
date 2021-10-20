@@ -69,7 +69,6 @@ bootstrap_package_name = {
 	"mojo-parent": "mojo-parent-pom",
 	"objectweb-asm": "asm",
 	"osgi-compendium": "osgi-cmpn",
-	"plexus-build-api": "sisu-build-api",
 	"sisu": "sisu-inject",
 	"sonatype-oss-parent": "oss-parent-pom",
 	"velocity": "velocity-engine",
