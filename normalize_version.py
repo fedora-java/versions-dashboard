@@ -26,39 +26,39 @@
 import re
 
 def normalize(version: str) -> str:
-  version_name = version[:]
-  version_name = version_name.replace("_", ".")
-  version_name = version_name.replace("-", ".")
-  
-  # Match the usual version symbols (numbers and dot)
-  match = re.match("([.0-9]*[0-9]+)(.*)", version_name)
-  
-  if not match:
-    raise Exception("Invalid version name: " + version_name)
-  
-  leading = match.group(1)
-  trailing = match.group(2)
-  
-  if trailing == ".Final":
-    return leading
-  
-  # If the proper version is followed by a single letter, keep it
-  # Use tilde split otherwise
-  if not re.match("^[a-zA-Z]$", trailing):
-    if trailing:
-      if trailing.startswith((".", "~")):
-        trailing = trailing[1:]
-      
-      # Service pack post-release should not use pre-release tilde
-      if trailing.startswith("SP"):
-        trailing = "." + trailing
-      
-      else:
-        trailing = "~" + trailing
+    version_name = version[:]
+    version_name = version_name.replace("_", ".")
+    version_name = version_name.replace("-", ".")
     
-    trailing = trailing.replace("-", ".")
-  
-  return leading + trailing
+    # Match the usual version symbols (numbers and dot)
+    match = re.match("([.0-9]*[0-9]+)(.*)", version_name)
+    
+    if not match:
+        raise Exception("Invalid version name: " + version_name)
+    
+    leading = match.group(1)
+    trailing = match.group(2)
+    
+    if trailing == ".Final":
+        return leading
+    
+    # If the proper version is followed by a single letter, keep it
+    # Use tilde split otherwise
+    if not re.match("^[a-zA-Z]$", trailing):
+        if trailing:
+            if trailing.startswith((".", "~")):
+                trailing = trailing[1:]
+            
+            # Service pack post-release should not use pre-release tilde
+            if trailing.startswith("SP"):
+                trailing = "." + trailing
+            
+            else:
+                trailing = "~" + trailing
+        
+        trailing = trailing.replace("-", ".")
+    
+    return leading + trailing
 
 ################################################################################
 
