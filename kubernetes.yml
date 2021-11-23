@@ -117,6 +117,8 @@ spec:
               env:
                 - name: OUT_JSON
                   value: /srv/versions.json
+                - name: URL_PACKAGE_NAMES
+                  value: https://mbi-artifacts.s3.eu-central-1.amazonaws.com/3406f152-0ceb-4291-8f27-6db7db011c16/subject.xml
               volumeMounts:
                 - name: data
                   mountPath: /srv

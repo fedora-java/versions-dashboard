@@ -70,9 +70,9 @@ bootstrap_package_name = {
 
 ################################################################################
 
-def get_package_names() -> [str]:
+def get_package_names(source_url) -> [str]:
     result = []
-    req = requests.get("https://mbi-artifacts.s3.eu-central-1.amazonaws.com/3406f152-0ceb-4291-8f27-6db7db011c16/subject.xml")
+    req = requests.get(source_url)
     for line in req.text.splitlines():
         line = line.strip()
         if line.startswith("<name>") and line.endswith("</name>"):
@@ -196,7 +196,7 @@ futures = {
     "jp-bootstrap": {}
 }
 
-result = {pkg: {} for pkg in get_package_names()}
+result = {pkg: {} for pkg in get_package_names(os.environ["URL_PACKAGE_NAMES"])}
 
 # Futures
 
