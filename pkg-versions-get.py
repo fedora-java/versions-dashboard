@@ -125,36 +125,6 @@ def get_upstream_version(package_name: str) -> {str: str}:
     
     return result
 
-"""
-def get_upstream_versions_cached(upstream_cache_path, package_names: [str]) -> {str: {str: str}}:
-    update_cache = False
-    result = {}
-    time_retrieved_literal = "time-retrieved"
-    
-    if not os.path.exists(upstream_cache_path):
-        update_cache = True
-    else:
-        with open(upstream_cache_path, "r") as cache_file:
-            cache = json.load(cache_file)
-        
-        if time.time() - cache[time_retrieved_literal] > upstream_cache_interval:
-            update_cache = True
-        else:
-            result = cache["packages"]
-    
-    if update_cache:
-        result = get_upstream_versions(package_names)
-        
-        with open(upstream_cache_path, "w") as cache_file:
-            json.dump({
-                time_retrieved_literal: time.time(),
-                "packages": result
-            }, cache_file, indent = 2)
-            cache_file.write("\n")
-    
-    return result
-"""
-
 def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
     ks = koji.ClientSession(url)
     ks.multicall = True
@@ -186,9 +156,9 @@ def get_boostrap_version(package_name: str) -> str:
 
 ################################################################################
 
-output_path = os.environ.get("OUT_JSON", "versions.json")
-
 request_pool = thread_pool(32)
+
+output_path = os.environ.get("OUT_JSON", "versions.json")
 
 futures = {
     "fedora": {"f" + str(v): None for v in range(28, 36 + 1)},
