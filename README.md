@@ -1,3 +1,3 @@
 # versions-dashboard
 
-This project builds an .html version report of packages required to build maven in Fedora.
+This project creates a json version report of packages required to build maven in Fedora.
