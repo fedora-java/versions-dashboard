@@ -28,6 +28,7 @@ import koji
 import os
 import requests
 import time
+import xml.etree.ElementTree as xmltree
 
 from concurrent.futures import ThreadPoolExecutor as thread_pool
 
@@ -73,10 +74,9 @@ bootstrap_package_name = {
 def get_package_names(source_url) -> [str]:
     result = []
     req = requests.get(source_url)
-    for line in req.text.splitlines():
-        line = line.strip()
-        if line.startswith("<name>") and line.endswith("</name>"):
-            result.append(line[6:-7])
+    subject_xml = xmltree.fromstring(req.text)
+    for component in subject_xml:
+        result.append(component.find("name").text)
     return result
 
 def retry_response(request, retries, **kwargs):
