@@ -117,10 +117,6 @@ spec:
               env:
                 - name: OUT_JSON
                   value: /srv/versions.json
-                - name: OUT_HTML
-                  value: /srv/index.html
-                - name: CACHE_FILE
-                  value: /srv/cache.json
               volumeMounts:
                 - name: data
                   mountPath: /srv
