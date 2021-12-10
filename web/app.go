@@ -45,6 +45,9 @@ func (cell VersionCell) Class() string {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	url := os.Getenv("VERSIONS_JSON_URL")
+	if url == "" {
+		url = "https://versions.kjnet.xyz/versions.json"
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
