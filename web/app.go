@@ -67,7 +67,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		for _, fv := range result.Columns.Fedora {
 			v := val.Fedora[fv]
 			if cur.Repeat != 0 && v != cur.Version {
-				cur.Base = v
+				//cur.Base = v
+				cur.Base = cur.Version
 				x = append(x, cur)
 				cur.Repeat = 0
 			}
