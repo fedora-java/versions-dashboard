@@ -62,14 +62,18 @@ var Template = template.Must(template.New("tpl").Parse(`
     <tr>
       <td><code>{{$component}}</code></td>
 
-      <td>{{.JPB}}</td>
+      <td>{{.JpbNorm.Version}}</td>
 
-      {{ range .Fedora }}
-      <td>{{.}}</td>
+      {{ range .Normalized }}
+      <td colspan="{{.Repeat}}">{{.Version}}</td>
       {{ end }}
 
+      {{ if eq .Upstream.Latest .Upstream.Stable }}
+      <td colspan="2">{{.Upstream.Latest}}</td>
+      {{ else }}
       <td>{{.Upstream.Stable}}</td>
       <td>{{.Upstream.Latest}}</td>
+      {{ end }}
     </tr>
     {{ end }}
   </tbody>

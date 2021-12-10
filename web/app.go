@@ -8,14 +8,21 @@ import (
 	"os"
 )
 
+type VersionCell struct {
+	Repeat  int
+	Version string
+}
+
 type Versions struct {
 	Versions map[string]struct {
 		Upstream struct {
 			Latest string
 			Stable string `json:"latest-stable"`
 		}
-		JPB    string `json:"jp-bootstrap"`
-		Fedora map[string]string
+		JPB        string `json:"jp-bootstrap"`
+		JpbNorm    VersionCell
+		Fedora     map[string]string
+		Normalized []VersionCell
 	}
 	Columns struct {
 		Fedora []string
@@ -38,6 +45,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		resp.Body.Close()
 		log.Fatal(err)
+	}
+	for key, val := range result.Versions {
+		cur := VersionCell{}
+		x := []VersionCell{}
+		for _, fv := range result.Columns.Fedora {
+			v := val.Fedora[fv]
+			if cur.Repeat != 0 && v != cur.Version {
+				x = append(x, cur)
+				cur.Repeat = 0
+			}
+			cur.Version = v
+			cur.Repeat++
+		}
+		val.JpbNorm = VersionCell{1, val.JPB}
+		val.Normalized = append(x, cur)
+		result.Versions[key] = val
 	}
 	w.Header().Add("Content-Type", "text/html")
 	err = Template.Execute(w, result)
