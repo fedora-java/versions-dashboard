@@ -10,18 +10,19 @@ import (
 
 type VersionCell struct {
 	Repeat  int
-	Version string
+	Version Version
+	Base    Version
 }
 
 type Versions struct {
 	Versions map[string]struct {
 		Upstream struct {
-			Latest string
-			Stable string `json:"latest-stable"`
+			Latest Version
+			Stable Version `json:"latest-stable"`
 		}
-		JPB        string `json:"jp-bootstrap"`
+		JPB        Version `json:"jp-bootstrap"`
 		JpbNorm    VersionCell
-		Fedora     map[string]string
+		Fedora     map[string]Version
 		Normalized []VersionCell
 	}
 	Columns struct {
@@ -29,6 +30,17 @@ type Versions struct {
 	} `json:"version-columns"`
 	Hostname string
 	Time     string `json:"time-generated"`
+}
+
+func (cell VersionCell) Class() string {
+	cmp := cell.Version.RpmVerCmp(cell.Base)
+	if cmp < 0 {
+		return "downgrade"
+	}
+	if cmp > 0 {
+		return "upgrade"
+	}
+	return ""
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -52,13 +64,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		for _, fv := range result.Columns.Fedora {
 			v := val.Fedora[fv]
 			if cur.Repeat != 0 && v != cur.Version {
+				cur.Base = v
 				x = append(x, cur)
 				cur.Repeat = 0
 			}
 			cur.Version = v
 			cur.Repeat++
 		}
-		val.JpbNorm = VersionCell{1, val.JPB}
+		cur.Base = val.Upstream.Stable
+		val.JpbNorm = VersionCell{1, val.JPB, cur.Version}
 		val.Normalized = append(x, cur)
 		result.Versions[key] = val
 	}
