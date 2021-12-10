@@ -1,123 +1,170 @@
 package main
 
 type Version string
-type Tape []rune
-type Token int
-type Action int
 
-// Lexical symbols
-const (
-	TILDE     Token = iota // Tilde "~"
-	EOT                    // End of tape
-	CARRET                 // Carret "^"
-	LETTER                 // Alphabet letter [a-zA-Z]
-	ZERO                   // Zero "0"
-	DIGIT                  // Non-zero digit [1-9]
-	SEPARATOR              // Anything else is treated as separator
-)
+// From rpmio/rpmvercmp.c
+// https://github.com/rpm-software-management/rpm/blob/master/rpmio/rpmvercmp.c
 
-// Recognise lexical symbol under head of the tape
-func lex(tape Tape) Token {
-	switch {
-	case len(tape) == 0:
-		return EOT
-	case tape[0] == '0':
-		return ZERO
-	case tape[0] >= '1' && tape[0] <= '9':
-		return DIGIT
-	case tape[0] >= 'a' && tape[0] <= 'z':
-		return LETTER
-	case tape[0] >= 'A' && tape[0] <= 'Z':
-		return LETTER
-	case tape[0] == '~':
-		return TILDE
-	case tape[0] == '^':
-		return CARRET
-	default:
-		return SEPARATOR
-	}
-}
-
-// Action to be taken by the Turing machine
-const (
-	GT0 Action = iota // Go to state 0
-	GT1               // Go to state 1
-	GT2               // Go to state 2
-	GT3               // Go to state 3
-	RLT               // Stop; reply "less than" (-1)
-	REQ               // Stop; reply "equal to" (0)
-	RGT               // Stop; reply "greater than" (+1)
-	CMP               // Compare two runes, continue if equal
-	NOP               // Do nothing
-	ADP               // Advance tape P by one rune
-	ADQ               // Advance tape Q by one rune
-	APQ               // Advance both tapes by one rune each
-)
-
-// Action table for Turing machine.
-// Indices are: current state, tokens under head of tape P and Q
-var action_table = [4][7][7]Action{
-	{
-		{APQ, RLT, RLT, RLT, RLT, RLT, ADQ},
-		{RGT, REQ, RLT, RLT, RLT, RLT, ADQ},
-		{RGT, RGT, APQ, RLT, RLT, RLT, ADQ},
-		{RGT, RGT, RGT, GT1, RLT, RLT, ADQ},
-		{RGT, RGT, RGT, RGT, GT2, GT2, ADQ},
-		{RGT, RGT, RGT, RGT, GT2, GT3, ADQ},
-		{ADP, ADP, ADP, ADP, ADP, ADP, APQ},
-	}, {
-		{GT0, RLT, RLT, RLT, RLT, RLT, GT0},
-		{RGT, REQ, RLT, RLT, RLT, RLT, GT0},
-		{RGT, RGT, GT0, RLT, RLT, RLT, GT0},
-		{RGT, RGT, RGT, CMP, RGT, RGT, RGT},
-		{RGT, RGT, RGT, RLT, GT2, GT2, GT0},
-		{RGT, RGT, RGT, RLT, GT2, GT3, GT0},
-		{GT0, GT0, GT0, RLT, GT0, GT0, GT0},
-	}, {
-		{GT0, RLT, RLT, RLT, ADQ, RLT, GT0},
-		{RGT, REQ, RLT, RLT, ADQ, RLT, GT0},
-		{RGT, RGT, GT0, RLT, ADQ, RLT, GT0},
-		{RGT, RGT, RGT, GT1, ADQ, RLT, GT0},
-		{ADP, ADP, ADP, ADP, APQ, ADP, ADP},
-		{RGT, RGT, RGT, RGT, ADQ, GT3, RGT},
-		{GT0, GT0, GT0, GT0, ADQ, RLT, GT0},
-	}, {
-		{GT0, RLT, RLT, RLT, RLT, RLT, GT0},
-		{RGT, REQ, RLT, RLT, RLT, RLT, GT0},
-		{RGT, RGT, GT0, RLT, RLT, RLT, GT0},
-		{RGT, RGT, RGT, GT1, RLT, RLT, GT0},
-		{RGT, RGT, RGT, RGT, CMP, CMP, RGT},
-		{RGT, RGT, RGT, RGT, CMP, CMP, RGT},
-		{GT0, GT0, GT0, GT0, RLT, RLT, GT0},
-	},
-}
-
-// Compare two RPM version strings. Return -1, 0 or 1.
-// Implemented as a Turing machine with two finite tapes P,Q
+/* compare alpha and numeric segments of two versions */
+/* return 1: a is newer than b */
+/*        0: a and b are the same version */
+/*       -1: b is newer than a */
 func (a Version) RpmVerCmp(b Version) int {
 
-	P, Q := Tape(a), Tape(b)
-	state := 0
+	/* easy comparison to see if versions are identical */
+	if a == b {
+		return 0
+	}
 
-	// Run Turing machine until it decides to stop.
-	for {
-		tokP, tokQ := lex(P), lex(Q)
-		action := action_table[state][tokP][tokQ]
-		if action <= GT3 {
-			state = int(action)
-			action = action_table[state][tokP][tokQ]
+	// From rpmio/rpmstring.h
+	// https://github.com/rpm-software-management/rpm/blob/master/rpmio/rpmstring.h
+	rislower := func(c rune) bool { return c >= 'a' && c <= 'z' }
+	risupper := func(c rune) bool { return c >= 'A' && c <= 'Z' }
+	risalpha := func(c rune) bool { return rislower(c) || risupper(c) }
+	risdigit := func(c rune) bool { return c >= '0' && c <= '9' }
+	risalnum := func(c rune) bool { return risalpha(c) || risdigit(c) }
+
+	abuf, bbuf := append([]rune(a), 0), append([]rune(b), 0)
+	str1, str2 := 0, 0
+	one, two := str1, str2
+
+	/* loop through each version segment of str1 and str2 and compare them */
+	for abuf[one] != 0 || bbuf[two] != 0 {
+		for abuf[one] != 0 && !risalnum(abuf[one]) && abuf[one] != '~' && abuf[one] != '^' {
+			one++
 		}
-		if action <= RGT {
-			return int(action - 5)
+		for bbuf[two] != 0 && !risalnum(bbuf[two]) && bbuf[two] != '~' && bbuf[two] != '^' {
+			two++
 		}
-		if action == CMP && P[0] != Q[0] {
-			return int((P[0]-Q[0])>>31 | 1)
+
+		/* handle the tilde separator, it sorts before everything else */
+		if abuf[one] == '~' || bbuf[two] == '~' {
+			if abuf[one] != '~' {
+				return 1
+			}
+			if bbuf[two] != '~' {
+				return -1
+			}
+			one++
+			two++
+			continue
 		}
-		if action&1 != 0 {
-			P = P[1:]
+
+		/*
+		 * Handle caret separator. Concept is the same as tilde,
+		 * except that if one of the strings ends (base version),
+		 * the other is considered as higher version.
+		 */
+		if abuf[one] == '^' || bbuf[two] == '^' {
+			if abuf[one] == 0 {
+				return -1
+			}
+			if bbuf[two] == 0 {
+				return 1
+			}
+			if abuf[one] != '^' {
+				return 1
+			}
+			if bbuf[two] != '^' {
+				return -1
+			}
+			one++
+			two++
+			continue
 		}
-		if action&2 != 0 {
-			Q = Q[1:]
+
+		/* If we ran to the end of either, we are finished with the loop */
+		if abuf[one] == 0 || bbuf[two] == 0 {
+			break
 		}
+
+		str1 = one
+		str2 = two
+
+		/* grab first completely alpha or completely numeric segment */
+		/* leave one and two pointing to the start of the alpha or numeric */
+		/* segment and walk str1 and str2 to end of segment */
+		var isnum bool
+		if risdigit(abuf[str1]) {
+			for risdigit(abuf[str1]) {
+				str1++
+			}
+			for risdigit(bbuf[str2]) {
+				str2++
+			}
+			isnum = true
+		} else {
+			for risalpha(abuf[str1]) {
+				str1++
+			}
+			for risalpha(bbuf[str2]) {
+				str2++
+			}
+			isnum = false
+		}
+
+		/* take care of the case where the two version segments are */
+		/* different types: one numeric, the other alpha (i.e. empty) */
+		/* numeric segments are always newer than alpha segments */
+		/* XXX See patch #60884 (and details) from bugzilla #50977. */
+		if two == str2 {
+			if isnum {
+				return 1
+			} else {
+				return -1
+			}
+		}
+
+		if isnum {
+			/* this used to be done by converting the digit segments */
+			/* to ints using atoi() - it's changed because long  */
+			/* digit segments can overflow an int - this should fix that. */
+
+			/* throw away any leading zeros - it's a number, right? */
+			for abuf[one] == '0' {
+				one++
+			}
+			for bbuf[two] == '0' {
+				two++
+			}
+
+			/* whichever number has more digits wins */
+			onelen := str1 - one
+			twolen := str2 - two
+			if onelen > twolen {
+				return 1
+			}
+			if twolen > onelen {
+				return -1
+			}
+		}
+
+		/* strcmp will return which one is greater - even if the two */
+		/* segments are alpha or if they are numeric.  don't return  */
+		/* if they are equal because there might be more segments to */
+		/* compare */
+		if string(abuf[one:str1]) < string(bbuf[two:str2]) {
+			return -1
+		}
+		if string(abuf[one:str1]) > string(bbuf[two:str2]) {
+			return 1
+		}
+
+		one = str1
+		two = str2
+	}
+
+	/* this catches the case where all numeric and alpha segments have */
+	/* compared identically but the segment sepparating characters were */
+	/* different */
+	if abuf[one] == 0 && bbuf[two] == 0 {
+		return 0
+	}
+
+	/* whichever version still has characters left over wins */
+	if abuf[one] == 0 {
+		return -1
+	} else {
+		return 1
 	}
 }
