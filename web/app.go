@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 type Versions struct {
@@ -24,7 +25,7 @@ type Versions struct {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	url := "http://versions-json/versions.json"
+	url := os.Getenv("VERSIONS_JSON_URL")
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
