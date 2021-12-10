@@ -1,7 +1,7 @@
 FROM golang:1.17 as build
 ENV CGO_ENABLED=0
 COPY *.go /
-RUN ["go","build","-o","/app","/app.go","/template.go"]
+RUN ["go","build","-o","/app","/app.go","/template.go","/rpmvercmp.go"]
 
 FROM gcr.io/distroless/static
 COPY --from=build /app /
