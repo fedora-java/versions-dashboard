@@ -36,21 +36,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: versions-frontend
+  name: versions-json
 spec:
   strategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      service: versions-frontend
+      service: versions-json
   replicas: 2
   template:
     metadata:
       labels:
-        service: versions-frontend
+        service: versions-json
     spec:
       containers:
-        - name: versions-frontend
+        - name: versions-json
           image: docker.io/philippgille/serve
           ports:
             - containerPort: 8080
@@ -70,17 +70,61 @@ spec:
           persistentVolumeClaim:
             claimName: versions-data
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: versions-web
+spec:
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      service: versions-web
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        service: versions-web
+    spec:
+      containers:
+        - name: versions-web
+          image: quay.io/mizdebsk/versions-web:latest
+          env:
+            - name: VERSIONS_JSON_URL
+              value: http://versions-json:8080/versions.json
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 500m
+              memory: 128Mi
+            limits:
+              cpu: 2000m
+              memory: 512Mi
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: versions
+  name: versions-json
   labels:
-    service: versions
+    service: versions-json
 spec:
   ports:
   - port: 8080
   selector:
-    service: versions-frontend
+    service: versions-json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: versions-web
+  labels:
+    service: versions-web
+spec:
+  ports:
+  - port: 8080
+  selector:
+    service: versions-web
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -91,11 +135,18 @@ spec:
   - host: versions.kos.kjnet.xyz
     http:
       paths:
+      - path: /versions.json
+        pathType: Prefix
+        backend:
+          service:
+            name: versions-json
+            port:
+              number: 8080
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: versions
+            name: versions-web
             port:
               number: 8080
 ---
@@ -113,7 +164,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: versions-backend
-              image: quay.io/mizdebsk/versions-dashboard:latest
+              image: quay.io/mizdebsk/versions-backend:latest
               env:
                 - name: OUT_JSON
                   value: /srv/versions.json
