@@ -69,6 +69,21 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: versions-data
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - op01.kos.kjnet.xyz
+                      - op02.kos.kjnet.xyz
+                      - op03.kos.kjnet.xyz
+                      - op04.kos.kjnet.xyz
+                      - op05.kos.kjnet.xyz
+                      - op06.kos.kjnet.xyz
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -101,6 +116,21 @@ spec:
             limits:
               cpu: 2000m
               memory: 512Mi
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - op01.kos.kjnet.xyz
+                      - op02.kos.kjnet.xyz
+                      - op03.kos.kjnet.xyz
+                      - op04.kos.kjnet.xyz
+                      - op05.kos.kjnet.xyz
+                      - op06.kos.kjnet.xyz
 ---
 apiVersion: v1
 kind: Service
@@ -184,3 +214,18 @@ spec:
             - name: data
               persistentVolumeClaim:
                 claimName: versions-data
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 1
+                  preference:
+                    matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values:
+                          - op01.kos.kjnet.xyz
+                          - op02.kos.kjnet.xyz
+                          - op03.kos.kjnet.xyz
+                          - op04.kos.kjnet.xyz
+                          - op05.kos.kjnet.xyz
+                          - op06.kos.kjnet.xyz
