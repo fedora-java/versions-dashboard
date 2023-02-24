@@ -82,8 +82,6 @@ spec:
                       - op02.kos.kjnet.xyz
                       - op03.kos.kjnet.xyz
                       - op04.kos.kjnet.xyz
-                      - op05.kos.kjnet.xyz
-                      - op06.kos.kjnet.xyz
       topologySpreadConstraints:
         - maxSkew: 1
           whenUnsatisfiable: DoNotSchedule
@@ -133,8 +131,6 @@ spec:
                       - op02.kos.kjnet.xyz
                       - op03.kos.kjnet.xyz
                       - op04.kos.kjnet.xyz
-                      - op05.kos.kjnet.xyz
-                      - op06.kos.kjnet.xyz
       topologySpreadConstraints:
         - maxSkew: 1
           whenUnsatisfiable: DoNotSchedule
@@ -235,5 +231,3 @@ spec:
                           - op02.kos.kjnet.xyz
                           - op03.kos.kjnet.xyz
                           - op04.kos.kjnet.xyz
-                          - op05.kos.kjnet.xyz
-                          - op06.kos.kjnet.xyz
