@@ -59,7 +59,6 @@ bootstrap_package_name = {
     "java_cup": "cup",
     "junit": "junit4",
     "maven-parent": "maven-parent-pom",
-    "maven-plugin-build-helper": "build-helper-maven-plugin",
     "mojo-parent": "mojo-parent-pom",
     "objectweb-asm": "asm",
     "osgi-compendium": "osgi-cmpn",
