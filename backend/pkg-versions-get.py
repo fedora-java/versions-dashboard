@@ -65,6 +65,8 @@ bootstrap_package_name = {
     "sisu": "sisu-inject",
     "sonatype-oss-parent": "oss-parent-pom",
     "velocity": "velocity-engine",
+    "jakarta-mail": "mail-api",
+    "jakarta-activation1": "jaf-api",
 }
 
 ################################################################################
