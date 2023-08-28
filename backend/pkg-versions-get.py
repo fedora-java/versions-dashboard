@@ -21,7 +21,7 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-# Author: Marian Koncek <mkoncek@redhat.com> 
+# Author: Marian Koncek <mkoncek@redhat.com>
 
 import json
 import koji
@@ -66,7 +66,7 @@ bootstrap_package_name = {
     "sonatype-oss-parent": "oss-parent-pom",
     "velocity": "velocity-engine",
     "jakarta-mail": "mail-api",
-    "jakarta-activation1": "jaf-api",
+    "jakarta-activation": "jaf-api",
 }
 
 ################################################################################
