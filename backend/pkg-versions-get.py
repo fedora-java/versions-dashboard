@@ -161,7 +161,7 @@ request_pool = thread_pool(32)
 output_path = os.environ.get("OUT_JSON", "versions.json")
 
 futures = {
-    "fedora": {"f" + str(v): None for v in range(36, 40 + 1)},
+    "fedora": {"f" + str(v): None for v in range(38, 41 + 1)},
     "upstream": {},
     "jp-bootstrap": {}
 }
