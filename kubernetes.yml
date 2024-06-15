@@ -83,9 +83,12 @@ spec:
                       - op03.kos.kjnet.xyz
                       - op04.kos.kjnet.xyz
       topologySpreadConstraints:
-        - maxSkew: 1
-          whenUnsatisfiable: DoNotSchedule
+        - labelSelector:
+            matchLabels:
+              service: versions-json
           topologyKey: kubernetes.io/hostname
+          maxSkew: 1
+          whenUnsatisfiable: DoNotSchedule
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -132,9 +135,12 @@ spec:
                       - op03.kos.kjnet.xyz
                       - op04.kos.kjnet.xyz
       topologySpreadConstraints:
-        - maxSkew: 1
-          whenUnsatisfiable: DoNotSchedule
+        - labelSelector:
+            matchLabels:
+              service: versions-web
           topologyKey: kubernetes.io/hostname
+          maxSkew: 1
+          whenUnsatisfiable: DoNotSchedule
 ---
 apiVersion: v1
 kind: Service
