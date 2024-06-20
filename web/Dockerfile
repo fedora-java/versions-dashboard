@@ -1,4 +1,4 @@
-FROM golang:1.17 as build
+FROM golang:1.22 as build
 ENV CGO_ENABLED=0
 COPY *.go /
 RUN ["go","build","-o","/app","/app.go","/template.go","/rpmvercmp.go"]
