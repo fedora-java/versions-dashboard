@@ -1,0 +1,44 @@
+{{ template "header.html" }}
+
+<h2>Version report</h2>
+<p>Based on data fetched at {{.Time}} by <code>{{.Hostname}}</code></p>
+
+<table class="version-dashboard table table-bordered table-striped table-hover">
+  <thead class="table-primary">
+    <tr>
+      <th rowspan="2">Package name</th>
+      <th rowspan="2">Javapackages<br/>Bootstrap<br/>version</th>
+      <th colspan="{{ len .Columns.Fedora }}">Fedora versions</th>
+      <th colspan="2">Upstream version</th>
+    </tr>
+    <tr>
+      {{ range .Columns.Fedora }}
+      <th>{{.}}</th>
+      {{ end }}
+      <th>Stable</th>
+      <th>Latest</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range $component, $_ := .Versions }}
+    <tr>
+      <td><code>{{$component}}</code></td>
+
+      <td class="{{.JpbNorm.Class}}">{{.JpbNorm.Version}}</td>
+
+      {{ range .Normalized }}
+      <td colspan="{{.Repeat}}" class="{{.Class}}">{{.Version}}</td>
+      {{ end }}
+
+      {{ if eq .Upstream.Latest .Upstream.Stable }}
+      <td colspan="2">{{.Upstream.Latest}}</td>
+      {{ else }}
+      <td>{{.Upstream.Stable}}</td>
+      <td>{{.Upstream.Latest}}</td>
+      {{ end }}
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+
+{{ template "footer.html" }}

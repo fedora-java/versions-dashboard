@@ -114,7 +114,7 @@ func base_handler(group_name string, w http.ResponseWriter, r *http.Request) {
 		result.Versions[key] = val
 	}
 	w.Header().Add("Content-Type", "text/html")
-	err = Template.Execute(w, result)
+	err = Template.ExecuteTemplate(w, "versions.html", result)
 	if err != nil {
 		fmt.Println(err)
 	}
