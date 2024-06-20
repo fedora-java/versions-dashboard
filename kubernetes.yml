@@ -208,8 +208,6 @@ spec:
               env:
                 - name: OUT_JSON
                   value: /srv/versions.json
-                - name: URL_PACKAGE_NAMES
-                  value: https://mizdebsk.fedorapeople.org/subject.xml
                 - name: URL_PACKAGE_GROUPS
                   value: https://mizdebsk.fedorapeople.org/groups.json
               volumeMounts:

@@ -71,14 +71,6 @@ bootstrap_package_name = {
 
 ################################################################################
 
-def get_package_names(source_url) -> [str]:
-    result = []
-    req = requests.get(source_url)
-    subject_xml = xmltree.fromstring(req.text)
-    for component in subject_xml:
-        result.append(component.find("name").text)
-    return result
-
 def retry_response(request, retries, **kwargs):
     response = None
     while retries > 0:
@@ -166,9 +158,9 @@ futures = {
     "jp-bootstrap": {}
 }
 
-result = {pkg: {} for pkg in get_package_names(os.environ["URL_PACKAGE_NAMES"])}
-
 groups = retry_response(os.environ["URL_PACKAGE_GROUPS"], 3).json()["groups"]
+
+result = {pkg: {} for group in groups.values() for pkg in group}
 
 # Futures
 
