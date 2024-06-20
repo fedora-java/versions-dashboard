@@ -168,6 +168,8 @@ futures = {
 
 result = {pkg: {} for pkg in get_package_names(os.environ["URL_PACKAGE_NAMES"])}
 
+groups = retry_response(os.environ["URL_PACKAGE_GROUPS"], 3).json()["groups"]
+
 # Futures
 
 for version in futures["fedora"].keys():
@@ -196,6 +198,7 @@ with open(output_path, "w") as output_file:
         },
         "upstream-columns": ["latest", "latest-stable"],
         "versions": result,
+        "groups": groups,
     }
     json.dump(result, output_file, indent = 2)
     output_file.write("\n")
