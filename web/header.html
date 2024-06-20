@@ -36,6 +36,8 @@
 		{{ range $name, $packages := .Groups }}
 		<a class="dropdown-item" href="/group/{{ $name }}">{{ $name }}</a>
 		{{ end }}
+		<div class="dropdown-divider"></div>
+		<a class="dropdown-item" href="/">All packages</a>
               </div>
 	    </li>
 	  </ul>
