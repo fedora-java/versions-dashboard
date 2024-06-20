@@ -26,7 +26,21 @@
           <svg y='42' height='4' width='150' viewbox='0 42 150 4'><text x='-6' y='47'>MBI</text></svg>
         </svg>
 	<a class="navbar-brand" href="/">Dashboard</a>
-	<div class="collapse navbar-collapse" id="navbarsExampleDefault"></div>
+	<div class="collapse navbar-collapse">
+	  <ul class="navbar-nav mr-auto">
+	    <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="/groups" role="button" data-bs-toggle="dropdown">
+		Groups
+              </a>
+              <div class="dropdown-menu">
+		{{ range $name, $packages := .Groups }}
+		<a class="dropdown-item" href="/group/{{ $name }}">{{ $name }}</a>
+		{{ end }}
+              </div>
+	    </li>
+	  </ul>
+	</div>
       </div>
     </nav>
+
     <main class='container'>
