@@ -120,33 +120,7 @@ func base_handler(group_name string, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func groups_list_handler(w http.ResponseWriter, r *http.Request) {
-	url := os.Getenv("VERSIONS_JSON_URL")
-	if url == "" {
-		url = "https://versions.kjnet.xyz/versions.json"
-	}
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
-		log.Fatal(fmt.Errorf("HTTP GET failed: %s", resp.Status))
-	}
-	var result Versions
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		resp.Body.Close()
-		log.Fatal(err)
-	}
-	w.Header().Add("Content-Type", "text/html")
-	err = Template.ExecuteTemplate(w, "groups.html", result)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
 func main() {
-	http.HandleFunc("/groups/", groups_list_handler)
 	http.HandleFunc("/group/", group_handler)
 	http.HandleFunc("/", all_handler)
 	http.ListenAndServe(":8080", nil)
