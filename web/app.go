@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -33,6 +34,8 @@ type Versions struct {
 	Time     string `json:"time-generated"`
 	Groups   map[string][]string
 }
+
+var Template = template.Must(template.ParseGlob("*.html"))
 
 func (cell VersionCell) Class() string {
 	cmp := cell.Version.RpmVerCmp(cell.Base)
