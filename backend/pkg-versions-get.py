@@ -148,7 +148,7 @@ def get_boostrap_version(package_name: str) -> str:
 
 ################################################################################
 
-request_pool = thread_pool(32)
+request_pool = thread_pool(8)
 
 output_path = os.environ.get("OUT_JSON", "versions.json")
 
