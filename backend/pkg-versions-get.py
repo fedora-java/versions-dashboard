@@ -67,6 +67,7 @@ bootstrap_package_name = {
     "jakarta-mail": "mail-api",
     "jakarta-activation": "jaf-api",
     "plexus-build-api0": "plexus-build-api",
+    "plexus-build-api": "none",
 }
 
 ################################################################################
