@@ -135,7 +135,7 @@ def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
 def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
     return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
-def get_boostrap_version(package_name: str) -> str:
+def get_bootstrap_version(package_name: str) -> str:
     result = ""
     req = requests.get(f"https://raw.githubusercontent.com/fedora-java/javapackages-bootstrap/master/project/{package_name}.properties")
     if not req.ok:
@@ -170,7 +170,7 @@ for version in futures["fedora"].keys():
 
 for pkg in result.keys():
     futures["upstream"][pkg] = request_pool.submit(get_upstream_version, pkg)
-    futures["jp-bootstrap"][pkg] = request_pool.submit(get_boostrap_version, bootstrap_package_name.get(pkg, pkg))
+    futures["jp-bootstrap"][pkg] = request_pool.submit(get_bootstrap_version, bootstrap_package_name.get(pkg, pkg))
 
 # Result
 
