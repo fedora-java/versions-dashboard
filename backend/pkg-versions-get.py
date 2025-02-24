@@ -23,6 +23,7 @@
 #
 # Author: Marian Koncek <mkoncek@redhat.com>
 
+import time
 import json
 import koji
 import os
@@ -72,10 +73,11 @@ bootstrap_package_name = {
 
 ################################################################################
 
-def retry_response(request, retries, **kwargs):
+def retry_response(request, retries, timeout = 0, **kwargs):
     response = None
     while retries > 0:
         response = requests.get(request, kwargs)
+        time.sleep(timeout)
         if response.status_code == 200:
             break
         retries -= 1
@@ -87,6 +89,7 @@ def get_upstream_version(package_name: str) -> {str: str}:
     package_response = retry_response(
         f"https://release-monitoring.org/api/v2/packages/?name={package_name}&distribution=Fedora",
         retries,
+        timeout = 2,
     )
     
     if not package_response:
@@ -100,6 +103,7 @@ def get_upstream_version(package_name: str) -> {str: str}:
     project_response = retry_response(
         f"https://release-monitoring.org/api/v2/projects/?name={project_name}",
         retries,
+        timeout = 2,
     )
     
     if not project_response:
@@ -149,7 +153,7 @@ def get_bootstrap_version(package_name: str) -> str:
 
 ################################################################################
 
-request_pool = thread_pool(8)
+request_pool = thread_pool(1)
 
 output_path = os.environ.get("OUT_JSON", "versions.json")
 
