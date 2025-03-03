@@ -36,6 +36,15 @@ from concurrent.futures import ThreadPoolExecutor as thread_pool
 
 from normalize_version import normalize
 
+def log_debug(message):
+    print("[DEBUG] " + message, file = sys.stderr)
+
+def log_info(message):
+    print("[INFO] " + message, file = sys.stderr)
+
+def log_warn(message):
+    print("[WARN] " + message, file = sys.stderr)
+
 # The mapping from package name to package name used in javapackages-bootstrap repository
 bootstrap_package_name = {
     "apache-commons-beanutils": "commons-beanutils",
@@ -84,7 +93,7 @@ def retry_response(request, retries, timeout = 0, **kwargs):
     return response
 
 def get_upstream_version(package_name: str) -> {str: str}:
-    sys.stderr.write(f"[INFO] obtaining upstream version information for package {package_name}")
+    log_info(f"obtaining upstream version information for package {package_name}")
     result = {}
     retries = 3
     package_response = retry_response(
@@ -138,15 +147,15 @@ def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
     return result
 
 def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
-    sys.stderr.write(f"[INFO] obtaining fedora version information...")
+    log_info("obtaining fedora version information...")
     return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
 def get_bootstrap_version(package_name: str) -> str:
-    sys.stderr.write(f"[INFO] obtaining bootstrap version information for package {package_name}")
+    log_info("obtaining bootstrap version information for package {package_name}")
     result = ""
     req = requests.get(f"https://raw.githubusercontent.com/fedora-java/javapackages-bootstrap/master/project/{package_name}.properties")
     if not req.ok:
-        sys.stderr.write(f"[WARN] package {package_name} not found in upstream javapackages-bootstrap GitHub repository")
+        log_warn(f"package {package_name} not found in upstream javapackages-bootstrap GitHub repository")
     else:
         result = req.text
         begin = result.find("version=")
@@ -156,7 +165,7 @@ def get_bootstrap_version(package_name: str) -> str:
 
 ################################################################################
 
-sys.stderr.write("[DEBUG] backend started...")
+log_debug("backend started...")
 
 request_pool = thread_pool(1)
 
@@ -169,7 +178,7 @@ futures = {
 }
 
 groups = retry_response(os.environ["URL_PACKAGE_GROUPS"], 3).json()["groups"]
-sys.stderr.write("[DEBUG] package groups obtained")
+log_debug("package groups obtained")
 
 result = {pkg: {} for group in groups.values() for pkg in group}
 
@@ -187,16 +196,16 @@ for pkg in result.keys():
 for fedora_version in futures["fedora"].keys():
     for pkg, version in futures["fedora"][fedora_version].result().items():
         result[pkg].setdefault("fedora", {})[fedora_version] = version
-sys.stderr.write("[DEBUG] fedora versions obtained")
+log_debug("fedora versions obtained")
 
 for pkg in result.keys():
     result[pkg]["upstream"] = futures["upstream"][pkg].result()
-    sys.stderr.write("[DEBUG] upstream versions obtained")
+    log_debug("upstream versions obtained")
     result[pkg]["jp-bootstrap"] = futures["jp-bootstrap"][pkg].result()
-    sys.stderr.write("[DEBUG] bootstrap versions obtained")
+    log_debug("bootstrap versions obtained")
 
 with open(output_path, "w") as output_file:
-    sys.stderr.write(f"[DEBUG] output file {output_path} created")
+    log_debug(f"output file {output_path} created")
     result = {
         "time-generated": time.ctime(),
         "hostname": os.environ.get("HOSTNAME", "local"),
@@ -210,4 +219,4 @@ with open(output_path, "w") as output_file:
     json.dump(result, output_file, indent = 2)
     output_file.write("\n")
 
-sys.stderr.write("[DEBUG] backend finished")
+log_debug("backend finished")
