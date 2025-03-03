@@ -151,7 +151,7 @@ def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
     return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
 def get_bootstrap_version(package_name: str) -> str:
-    log_info("obtaining bootstrap version information for package {package_name}")
+    log_info(f"obtaining bootstrap version information for package {package_name}")
     result = ""
     req = requests.get(f"https://raw.githubusercontent.com/fedora-java/javapackages-bootstrap/master/project/{package_name}.properties")
     if not req.ok:
