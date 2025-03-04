@@ -32,8 +32,6 @@ import requests
 import time
 import xml.etree.ElementTree as xmltree
 
-from concurrent.futures import ThreadPoolExecutor as thread_pool
-
 from normalize_version import normalize
 
 def log_debug(message):
@@ -147,7 +145,7 @@ def get_koji_versions(package_names: [str], url: str, tag: str) -> {str : str}:
     return result
 
 def get_fedora_versions(package_names: [str], release: str) -> {str: str}:
-    log_info("obtaining fedora version information...")
+    log_info(f"obtaining fedora version information for release {release}...")
     return get_koji_versions(package_names, "https://koji.fedoraproject.org/kojihub", release)
 
 def get_bootstrap_version(package_name: str) -> str:
@@ -167,11 +165,9 @@ def get_bootstrap_version(package_name: str) -> str:
 
 log_debug("backend started...")
 
-request_pool = thread_pool(1)
-
 output_path = os.environ.get("OUT_JSON", "versions.json")
 
-futures = {
+results = {
     "fedora": {"f" + str(v): None for v in range(40, 42 + 1)},
     "upstream": {},
     "jp-bootstrap": {}
@@ -182,27 +178,29 @@ log_debug("package groups obtained")
 
 result = {pkg: {} for group in groups.values() for pkg in group}
 
-# Futures
+# Requests
 
-for version in futures["fedora"].keys():
-    futures["fedora"][version] = request_pool.submit(get_fedora_versions, result.keys(), version)
-
-for pkg in result.keys():
-    futures["upstream"][pkg] = request_pool.submit(get_upstream_version, pkg)
-    futures["jp-bootstrap"][pkg] = request_pool.submit(get_bootstrap_version, bootstrap_package_name.get(pkg, pkg))
-
-# Result
-
-for fedora_version in futures["fedora"].keys():
-    for pkg, version in futures["fedora"][fedora_version].result().items():
-        result[pkg].setdefault("fedora", {})[fedora_version] = version
+for version in results["fedora"].keys():
+    results["fedora"][version] = get_fedora_versions(result.keys(), version)
 log_debug("fedora versions obtained")
 
 for pkg in result.keys():
-    result[pkg]["upstream"] = futures["upstream"][pkg].result()
-    log_debug("upstream versions obtained")
-    result[pkg]["jp-bootstrap"] = futures["jp-bootstrap"][pkg].result()
-    log_debug("bootstrap versions obtained")
+    results["upstream"][pkg] = get_upstream_version(pkg)
+log_debug("upstream versions obtained")
+
+for pkg in result.keys():
+    results["jp-bootstrap"][pkg] = get_bootstrap_version(bootstrap_package_name.get(pkg, pkg))
+log_debug("bootstrap versions obtained")
+
+# Result
+
+for fedora_version in results["fedora"].keys():
+    for pkg, version in results["fedora"][fedora_version].items():
+        result[pkg].setdefault("fedora", {})[fedora_version] = version
+
+for pkg in result.keys():
+    result[pkg]["upstream"] = results["upstream"][pkg]
+    result[pkg]["jp-bootstrap"] = results["jp-bootstrap"][pkg]
 
 with open(output_path, "w") as output_file:
     log_debug(f"output file {output_path} created")
@@ -210,7 +208,7 @@ with open(output_path, "w") as output_file:
         "time-generated": time.ctime(),
         "hostname": os.environ.get("HOSTNAME", "local"),
         "version-columns": {
-            "fedora": [f for f in futures["fedora"].keys()],
+            "fedora": [f for f in results["fedora"].keys()],
         },
         "upstream-columns": ["latest", "latest-stable"],
         "versions": result,
