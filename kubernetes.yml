@@ -16,7 +16,7 @@ spec:
     - vers=4.2
   nfs:
     path: /srv/versions
-    server: 172.22.13.2
+    server: 172.22.4.11
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -78,10 +78,10 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - op01.kos.kjnet.xyz
-                      - op02.kos.kjnet.xyz
-                      - op03.kos.kjnet.xyz
-                      - op04.kos.kjnet.xyz
+                      - op01.lab.kjnet.xyz
+                      - op02.lab.kjnet.xyz
+                      - op03.lab.kjnet.xyz
+                      - op04.lab.kjnet.xyz
       topologySpreadConstraints:
         - labelSelector:
             matchLabels:
@@ -130,10 +130,10 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
-                      - op01.kos.kjnet.xyz
-                      - op02.kos.kjnet.xyz
-                      - op03.kos.kjnet.xyz
-                      - op04.kos.kjnet.xyz
+                      - op01.lab.kjnet.xyz
+                      - op02.lab.kjnet.xyz
+                      - op03.lab.kjnet.xyz
+                      - op04.lab.kjnet.xyz
       topologySpreadConstraints:
         - labelSelector:
             matchLabels:
@@ -172,7 +172,7 @@ metadata:
   name: versions
 spec:
   rules:
-  - host: versions.kos.kjnet.xyz
+  - host: versions.lab.kjnet.xyz
     http:
       paths:
       - path: /versions.json
@@ -233,7 +233,7 @@ spec:
                       - key: kubernetes.io/hostname
                         operator: In
                         values:
-                          - op01.kos.kjnet.xyz
-                          - op02.kos.kjnet.xyz
-                          - op03.kos.kjnet.xyz
-                          - op04.kos.kjnet.xyz
+                          - op01.lab.kjnet.xyz
+                          - op02.lab.kjnet.xyz
+                          - op03.lab.kjnet.xyz
+                          - op04.lab.kjnet.xyz
