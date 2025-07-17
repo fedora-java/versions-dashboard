@@ -168,7 +168,7 @@ log_debug("backend started...")
 output_path = os.environ.get("OUT_JSON", "versions.json")
 
 results = {
-    "fedora": {"f" + str(v): None for v in range(40, 42 + 1)},
+    "fedora": {"f" + str(v): None for v in range(41, 43 + 1)},
     "upstream": {},
     "jp-bootstrap": {}
 }
