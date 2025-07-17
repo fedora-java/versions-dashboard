@@ -38,10 +38,10 @@
       <td>{{.Upstream.Latest}}</td>
       {{ end }}
       <td>
-	[<a href="https://bugzilla.redhat.com/buglist.cgi?product=Fedora&component={{$component}}&f1=bug_status&o1=notequals&v1=CLOSED">B</a>]
-	[<a href="https://src.fedoraproject.org/rpms/{{$component}}">G</a>]
-	[<a href="https://koschei.fedoraproject.org/package/{{$component}}">K</a>]
-	[<a href="https://packages.fedoraproject.org/pkgs/{{$component}}/">P</a>]
+	<a title="Bugzilla" href="https://bugzilla.redhat.com/buglist.cgi?product=Fedora&component={{$component}}&f1=bug_status&o1=notequals&v1=CLOSED" style="text-decoration: none; color: inherit">🐞</a>
+	<a title="Dist-Git" href="https://src.fedoraproject.org/rpms/{{$component}}" style="text-decoration: none; color: inherit">🛠️</a>
+	<a title="Koschei" href="https://koschei.fedoraproject.org/package/{{$component}}" style="text-decoration: none; color: inherit">⚙️</a>
+	<a title="Packages" href="https://packages.fedoraproject.org/pkgs/{{$component}}/" style="text-decoration: none; color: inherit">🔍</a>
       </td>
     </tr>
     {{ end }}
