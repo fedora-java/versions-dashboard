@@ -10,6 +10,7 @@
       <th rowspan="2">Javapackages<br/>Bootstrap<br/>version</th>
       <th colspan="{{ len .Columns.Fedora }}">Fedora versions</th>
       <th colspan="2">Upstream version</th>
+      <th colspan="2">Links</th>
     </tr>
     <tr>
       {{ range .Columns.Fedora }}
@@ -36,6 +37,12 @@
       <td>{{.Upstream.Stable}}</td>
       <td>{{.Upstream.Latest}}</td>
       {{ end }}
+      <td>
+	[<a href="https://bugzilla.redhat.com/buglist.cgi?product=Fedora&component={{$component}}&f1=bug_status&o1=notequals&v1=CLOSED">B</a>]
+	[<a href="https://src.fedoraproject.org/rpms/{{$component}}">G</a>]
+	[<a href="https://koschei.fedoraproject.org/package/{{$component}}">K</a>]
+	[<a href="https://packages.fedoraproject.org/pkgs/{{$component}}/">P</a>]
+      </td>
     </tr>
     {{ end }}
   </tbody>
